@@ -1,17 +1,29 @@
+import { useState } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiChevronLeft, FiHeart, FiShare2, FiTruck, FiShield } from 'react-icons/fi';
 import axiosInstance from '../../api/axiosInstance';
 import PageWrapper from '../../components/layout/PageWrapper';
+import SimilarProducts from '../../components/product/SimilarProducts';
 import RecommendedProducts from '../../components/product/RecommendedProducts';
+import ShareModal from '../../components/ui/ShareModal';
 import toast from 'react-hot-toast';
+import OptimizedImage from '../../components/ui/OptimizedImage';
 import useCartStore from '../../store/cartStore';
+import useWishlistStore from '../../store/wishlistStore';
+import useAuthStore from '../../store/authStore';
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const { addToCart, isLoading: isAddingToCart } = useCartStore();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const { user } = useAuthStore();
 
   // Fetch product data
   const { data, isLoading, isError } = useQuery({
@@ -28,7 +40,7 @@ export default function ProductDetailPage() {
   const availableSizes = product ? [...new Set(product.variants?.map(v => v.size).filter(Boolean))] : [];
   const availableColors = product ? [...new Set(product.variants?.map(v => v.color).filter(Boolean))] : [];
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (availableSizes.length > 0 && !selectedSize) {
       return toast.error('Please select a size');
     }
@@ -45,13 +57,54 @@ export default function ProductDetailPage() {
       return toast.error('This combination is out of stock');
     }
 
-    addToCart({
-      productId: product._id,
-      quantity: 1,
-      size: selectedSize || undefined,
-      color: selectedColor || undefined
-    });
+    if (!user) {
+      toast.error('Please login to add items to cart');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await addToCart({
+        productId: product._id,
+        quantity: 1,
+        size: selectedSize || undefined,
+        color: selectedColor || undefined
+      });
+    } catch (error) {
+      console.error('Add to cart error:', error);
+    }
   };
+
+  const handleToggleWishlist = () => {
+    if (!user) {
+      toast.error('Please login to add items to wishlist');
+      navigate('/login');
+      return;
+    }
+    toggleWishlist(product);
+  };
+
+  const handleShare = async () => {
+    if (navigator.share && product) {
+      try {
+        const productUrl = `${window.location.origin}/products/${product.slug}`;
+        await navigator.share({
+          title: product.name,
+          text: `Check out this amazing product: ${product.name}`,
+          url: productUrl
+        });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Direct share failed:', err);
+        }
+      }
+    }
+
+    setIsShareOpen(true);
+  };
+
+  const inWishlist = product ? isInWishlist(product._id) : false;
 
   if (isLoading) {
     return (
@@ -91,40 +144,89 @@ export default function ProductDetailPage() {
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
 
           {/* Left: Image Gallery */}
-          <div className="w-full lg:w-1/2 flex flex-col-reverse md:flex-row gap-4">
-            {/* Thumbnails */}
-            <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-visible w-full md:w-24 flex-shrink-0">
+          <div className="w-full lg:w-1/2 flex flex-col lg:flex-row gap-6">
+            
+            {/* Desktop Thumbnails (Hidden on Mobile/Tablet) */}
+            <div className="hidden lg:flex flex-col gap-4 w-24 flex-shrink-0">
               {images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveImage(idx)}
-                  className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-rose-brand' : 'border-transparent opacity-60 hover:opacity-100'
+                  className={`relative aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all duration-300 ${activeImage === idx ? 'border-rose-brand shadow-lg scale-105' : 'border-transparent opacity-50 hover:opacity-100 hover:scale-105'
                     }`}
                 >
-                  <img src={img.url} alt="thumbnail" className="w-full h-full object-cover" />
+                  <OptimizedImage src={img.url} alt="thumbnail" width={100} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
 
-            {/* Main Image */}
-            <div className="flex-1 aspect-[3/4] rounded-2xl overflow-hidden bg-cream-100 relative">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={activeImage}
-                  src={images[activeImage].url}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full h-full object-cover"
-                />
-              </AnimatePresence>
+            {/* Mobile/Tablet Carousel + Desktop Main Image */}
+            <div className="flex-1 relative group">
+              {/* Main Display (Desktop) / Slider (Mobile) */}
+              <div 
+                className="relative aspect-[3/4] rounded-3xl overflow-hidden bg-cream-100 lg:shadow-2xl shadow-ink/5"
+              >
+                {/* Mobile Slider Logic (Native Scroll Snap) */}
+                <div 
+                  className="lg:hidden flex overflow-x-auto snap-x snap-mandatory h-full no-scrollbar"
+                  onScroll={(e) => {
+                    const index = Math.round(e.target.scrollLeft / e.target.offsetWidth);
+                    if (index !== activeImage) setActiveImage(index);
+                  }}
+                >
+                  {images.map((img, idx) => (
+                    <div key={idx} className="w-full h-full flex-shrink-0 snap-center">
+                      <OptimizedImage
+                        src={img.url}
+                        alt={`${product.name} ${idx + 1}`}
+                        width={800}
+                        priority={idx === 0}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Animated Display */}
+                <div className="hidden lg:block h-full w-full">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeImage}
+                      initial={{ opacity: 0, scale: 1.05 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: "circOut" }}
+                      className="h-full w-full"
+                    >
+                      <OptimizedImage
+                        src={images[activeImage].url}
+                        alt={product.name}
+                        width={800}
+                        priority
+                        className="w-full h-full object-cover"
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Mobile Pagination Dots */}
+                <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 lg:hidden">
+                  {images.map((_, idx) => (
+                    <div 
+                      key={idx}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        activeImage === idx ? 'w-8 bg-white shadow-sm' : 'w-1.5 bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Right: Product Info */}
           <div className="w-full lg:w-1/2 flex flex-col">
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-ink mb-4 leading-tight">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-ink mb-4 leading-tight">
               {product.name}
             </h1>
 
@@ -134,14 +236,14 @@ export default function ProductDetailPage() {
                 {'☆'.repeat(5 - Math.round(product.averageRating || 5))}
               </div>
               <span className="text-ink-muted underline cursor-pointer hover:text-ink">
-                {product.numOfReviews || 5} Revies
+                {product.numOfReviews || 5} Reviews
               </span>
             </div>
 
             <div className="flex items-end gap-4 mb-6">
-              <span className="text-3xl font-bold text-ink">${product.price.toFixed(2)}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-ink">₹{product.price?.toLocaleString('en-IN') || 'N/A'}</span>
               {product.msrp && product.msrp > product.price && (
-                <span className="text-lg text-ink-muted line-through mb-1">${product.msrp.toFixed(2)}</span>
+                <span className="text-lg text-ink-muted line-through mb-1">₹{product.msrp?.toLocaleString('en-IN')}</span>
               )}
             </div>
 
@@ -182,8 +284,8 @@ export default function ProductDetailPage() {
                         key={size}
                         onClick={() => setSelectedSize(size)}
                         className={`w-12 h-12 flex items-center justify-center border rounded-lg font-medium transition-all ${selectedSize === size
-                            ? 'bg-ink text-white border-ink'
-                            : 'bg-white text-ink border-cream-300 hover:border-ink'
+                          ? 'bg-ink text-white border-ink'
+                          : 'bg-white text-ink border-cream-300 hover:border-ink'
                           }`}
                       >
                         {size}
@@ -195,20 +297,28 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-4 mb-10">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 mb-10">
               <button
                 onClick={handleAddToCart}
                 disabled={product.totalStock <= 0 || isAddingToCart}
-                className={`flex-1 btn-primary py-4 text-lg ${product.totalStock > 0 && !isAddingToCart ? 'animate-pulse-once' : ''} ${isAddingToCart ? 'opacity-70 cursor-wait' : ''}`}
+                className={`w-full sm:flex-1 btn-primary py-3.5 sm:py-4 text-base sm:text-lg order-1 sm:order-none ${product.totalStock > 0 && !isAddingToCart ? 'animate-pulse-once' : ''} ${isAddingToCart ? 'opacity-70 cursor-wait' : ''}`}
               >
                 {isAddingToCart ? 'Adding...' : product.totalStock > 0 ? 'Add to Cart' : 'Sold Out'}
               </button>
-              <button className="w-14 h-14 flex items-center justify-center rounded-lg border border-cream-300 text-ink hover:text-rose-brand hover:border-cream-300 bg-white transition hover:bg-cream-100">
-                <FiHeart size={20} />
-              </button>
-              <button className="w-14.h-14 flex items-center justify-center rounded-lg border border-cream-300 text-ink hover:text-rose-brand hover:border-cream-300 bg-white transition hover:bg-cream-100">
-                <FiShare2 size={20} />
-              </button>
+              <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto order-2 sm:order-none">
+                <button
+                  onClick={handleToggleWishlist}
+                  className={`flex-1 sm:flex-none sm:w-14 h-12 sm:h-14 flex items-center justify-center rounded-lg border transition ${inWishlist ? 'border-rose-brand text-rose-brand' : 'border-cream-300 text-ink hover:text-rose-brand hover:border-cream-300'} bg-white hover:bg-cream-100`}
+                >
+                  <FiHeart size={20} className={inWishlist ? "fill-rose-brand" : ""} />
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="flex-1 sm:flex-none sm:w-14 h-12 sm:h-14 flex items-center justify-center rounded-lg border border-cream-300 text-ink hover:text-rose-brand hover:border-cream-300 bg-white transition hover:bg-cream-100"
+                >
+                  <FiShare2 size={20} />
+                </button>
+              </div>
             </div>
 
             {/* Guarantees */}
@@ -236,8 +346,18 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
+        {/* Similar Products */}
+        <SimilarProducts productId={product._id} category={product.category} />
+
         {/* AI Recommendations */}
         <RecommendedProducts categoryContext={product.category} />
+
+        {/* Share Modal */}
+        <ShareModal
+          isOpen={isShareOpen}
+          onClose={() => setIsShareOpen(false)}
+          product={product}
+        />
       </div>
     </PageWrapper>
   );

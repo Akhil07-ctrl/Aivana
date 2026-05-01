@@ -1,7 +1,20 @@
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+
+  const handleComingSoon = (e) => {
+    e.preventDefault();
+    toast.success('Coming soon!', {
+      icon: '✨',
+      style: {
+        borderRadius: '10px',
+        background: '#1A1A2E',
+        color: '#fff',
+      },
+    });
+  };
 
   return (
     <footer className="bg-ink text-white pt-16 pb-8">
@@ -22,9 +35,9 @@ export default function Footer() {
             <ul className="space-y-3">
               {['New Arrivals', 'Best Sellers', 'Dresses', 'Accessories', 'Sale'].map(link => (
                 <li key={link}>
-                  <Link to={`/shop?category=${link.toLowerCase()}`} className="text-cream-300/70 hover:text-rose-brand transition text-sm">
+                  <button onClick={handleComingSoon} className="text-cream-300/70 hover:text-rose-brand transition text-sm block text-left">
                     {link}
-                  </Link>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -35,9 +48,9 @@ export default function Footer() {
             <ul className="space-y-3">
               {['Track Order', 'Returns & Exchanges', 'Shipping Info', 'FAQ', 'Contact Us'].map(link => (
                 <li key={link}>
-                  <Link to="#" className="text-cream-300/70 hover:text-rose-brand transition text-sm">
+                  <button onClick={handleComingSoon} className="text-cream-300/70 hover:text-rose-brand transition text-sm block text-left">
                     {link}
-                  </Link>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -46,11 +59,12 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-white tracking-wider uppercase text-sm mb-6">Stay in the loop</h3>
             <p className="text-cream-300/70 text-sm mb-4">Subscribe for exclusive offers and AI fashion tips.</p>
-            <form className="flex" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex" onSubmit={handleComingSoon}>
               <input
                 type="email"
                 placeholder="Email address"
                 className="bg-white/5 border border-white/10 rounded-l-lg px-4 py-2 text-white text-sm w-full focus:outline-none focus:border-rose-brand focus:bg-white/10 transition"
+                required
               />
               <button type="submit" className="bg-rose-brand text-white px-4 py-2 rounded-r-lg font-medium hover:bg-rose-light transition">
                 Join
@@ -63,11 +77,12 @@ export default function Footer() {
         <div className="mt-8 flex flex-col md:flex-row items-center justify-between text-xs text-cream-300/50">
           <p>&copy; {currentYear} Aivana. All rights reserved.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
-            <Link to="#" className="hover:text-white transition">Privacy Policy</Link>
-            <Link to="#" className="hover:text-white transition">Terms of Service</Link>
+            <button onClick={handleComingSoon} className="hover:text-white transition">Privacy Policy</button>
+            <button onClick={handleComingSoon} className="hover:text-white transition">Terms of Service</button>
           </div>
         </div>
       </div>
     </footer>
   );
 }
+

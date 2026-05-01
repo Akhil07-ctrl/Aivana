@@ -5,8 +5,6 @@ import { AnimatePresence } from 'framer-motion';
 import AppRouter from './router/AppRouter';
 import useAuthStore from './store/authStore';
 import useCartStore from './store/cartStore';
-import CartDrawer from './components/cart/CartDrawer';
-import AiChatbot from './components/chat/AiChatbot';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,8 +43,6 @@ export default function App() {
       <AnimatePresence mode="wait">
         <AppRouter />
       </AnimatePresence>
-      <CartDrawer />
-      <AiChatbot />
       <Toaster
         position="bottom-right"
         toastOptions={{

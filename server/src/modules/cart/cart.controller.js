@@ -24,8 +24,15 @@ export const getMyCart = asyncHandler(async (req, res) => {
 export const addToCart = asyncHandler(async (req, res) => {
   const { productId, quantity = 1, size, color } = req.body;
 
+  // Validate required fields
+  if (!productId) {
+    throw new ApiError(400, 'Product ID is required');
+  }
+
   const product = await Product.findById(productId);
-  if (!product) throw new ApiError(404, 'Product not found');
+  if (!product) {
+    throw new ApiError(404, `Product not found with ID: ${productId}`);
+  }
 
   // Verify stock for specific variant
   let variantStock = product.totalStock;
@@ -36,7 +43,7 @@ export const addToCart = asyncHandler(async (req, res) => {
   }
 
   if (variantStock < quantity) {
-    throw new ApiError(400, 'Not enough stock available');
+    throw new ApiError(400, `Not enough stock available. Available: ${variantStock}, Requested: ${quantity}`);
   }
 
   let cart = await Cart.findOne({ user: req.user._id });

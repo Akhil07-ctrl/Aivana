@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import compression from 'compression';
 import morgan from 'morgan';
 import passport from 'passport';
 
@@ -54,6 +55,7 @@ initStockSocket(io);
 
 // Security & parsing
 app.use(helmet());
+app.use(compression());
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',

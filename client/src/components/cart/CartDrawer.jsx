@@ -108,7 +108,7 @@ export default function CartDrawer() {
                         </div>
 
                         <div className="flex justify-between items-center mt-3">
-                          <p className="font-bold text-ink">${item.price.toFixed(2)}</p>
+                          <p className="font-bold text-ink">₹{item.price?.toLocaleString('en-IN') || 'N/A'}</p>
                           <div className="flex items-center border border-cream-300 rounded-lg overflow-hidden">
                             <button
                               onClick={() => updateQuantity({ productId: product._id, size: item.size, color: item.color, quantity: item.quantity - 1 })}
@@ -137,7 +137,7 @@ export default function CartDrawer() {
               <div className="p-6 border-t border-cream-200 bg-cream-50">
                 <div className="flex justify-between items-center mb-4 text-ink">
                   <span className="font-medium text-ink-muted">Subtotal</span>
-                  <span className="font-bold text-xl">${totalPrice.toFixed(2)}</span>
+                  <span className="font-bold text-xl">₹{totalPrice?.toLocaleString('en-IN') || 'N/A'}</span>
                 </div>
                 <p className="text-xs text-ink-muted mb-6">Shipping and taxes calculated at checkout.</p>
 

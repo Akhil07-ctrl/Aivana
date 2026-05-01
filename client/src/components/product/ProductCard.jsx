@@ -1,32 +1,97 @@
-import { Link } from 'react-router-dom';
+import { useState, memo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiHeart } from 'react-icons/fi';
+import { FiHeart, FiShare2 } from 'react-icons/fi';
 import useCartStore from '../../store/cartStore';
 import useWishlistStore from '../../store/wishlistStore';
+import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
+import ShareModal from '../ui/ShareModal';
+import OptimizedImage from '../ui/OptimizedImage';
 
-export default function ProductCard({ product }) {
+const ProductCard = memo(function ProductCard({ product }) {
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const { addToCart } = useCartStore();
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const primaryImage = product.images?.find(img => img.isPrimary)?.url
     || product.images?.[0]?.url
     || 'https://via.placeholder.com/400x500?text=No+Image';
 
   const isOutOfStock = product.totalStock <= 0;
+  const inWishlist = isInWishlist(product._id);
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error('Please login to add items to cart');
+      navigate('/login');
+      return;
+    }
+    try {
+      await addToCart({
+        productId: product._id,
+        quantity: 1,
+        size: product.variants?.[0]?.size,
+        color: product.variants?.[0]?.color
+      });
+    } catch (error) {
+      console.error('Add to cart error:', error);
+    }
+  };
+
+  const handleToggleWishlist = (e) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error('Please login to add items to wishlist');
+      navigate('/login');
+      return;
+    }
+    toggleWishlist(product);
+  };
+
+  const handleShare = async (e) => {
+    e.preventDefault();
+
+    if (navigator.share) {
+      try {
+        const productUrl = `${window.location.origin}/products/${product.slug}`;
+        await navigator.share({
+          title: product.name,
+          text: `Check out this amazing product: ${product.name}`,
+          url: productUrl
+        });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Direct share failed:', err);
+        }
+      }
+    }
+
+    setIsShareOpen(true);
+  };
 
   return (
     <motion.div
       className="group cursor-pointer flex flex-col h-full bg-white rounded-xl shadow-sm hover:shadow-card-hover transition-shadow duration-300 overflow-hidden"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+        exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
+      }}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
       layout
     >
       <Link to={`/products/${product.slug}`} className="relative aspect-[3/4] overflow-hidden bg-cream-100 flex-shrink-0">
-        <img
+        <OptimizedImage
           src={primaryImage}
           alt={product.name}
+          width={400}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
 
@@ -42,24 +107,26 @@ export default function ProductCard({ product }) {
 
         {/* Hover Quick Action */}
         {!isOutOfStock && (
-          <div className="absolute inset-0 bg-ink/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 gap-2">
+          <div className="absolute inset-0 bg-ink/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-end justify-between p-4">
+            <div className="flex gap-2">
+              <button
+                onClick={handleToggleWishlist}
+                className={`w-11 h-11 bg-white rounded-full flex items-center justify-center transition-colors shadow-md ${inWishlist ? 'text-rose-brand' : 'text-ink hover:bg-rose-brand hover:text-white'}`}
+                title="Wishlist"
+              >
+                <FiHeart size={20} className={inWishlist ? "fill-rose-brand" : ""} />
+              </button>
+              <button
+                onClick={handleShare}
+                className="w-11 h-11 bg-white rounded-full flex items-center justify-center text-ink hover:bg-rose-brand hover:text-white transition-colors shadow-md"
+                title="Share"
+              >
+                <FiShare2 size={20} />
+              </button>
+            </div>
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                toggleWishlist(product);
-              }}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-ink hover:bg-rose-brand hover:text-white transition-colors shadow-sm"
-              title="Wishlist"
-            >
-              <FiHeart className={isInWishlist(product._id) ? "fill-rose-brand text-rose-brand" : ""} />
-            </button>
-            <button
-              className="flex-1 bg-white text-ink py-2.5 rounded-lg font-semibold shadow-lg hover:bg-rose-brand hover:text-white transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300"
-              onClick={(e) => {
-                e.preventDefault();
-                addToCart(product);
-                toast.success('Added to cart');
-              }}
+              className="w-full bg-white text-ink py-3 rounded-lg font-semibold shadow-lg hover:bg-rose-brand hover:text-white transition-colors"
+              onClick={handleAddToCart}
             >
               Add to Cart
             </button>
@@ -84,12 +151,21 @@ export default function ProductCard({ product }) {
         </Link>
 
         <div className="flex items-center gap-3 mt-auto pt-2">
-          <p className="text-ink font-bold text-lg">${product.price.toFixed(2)}</p>
+          <p className="text-ink font-bold text-lg">₹{product.price?.toLocaleString('en-IN') || 'N/A'}</p>
           {product.msrp && product.msrp > product.price && (
-            <p className="text-ink-muted line-through text-sm">${product.msrp.toFixed(2)}</p>
+            <p className="text-ink-muted line-through text-sm">₹{product.msrp?.toLocaleString('en-IN')}</p>
           )}
         </div>
       </div>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        product={product}
+      />
     </motion.div>
   );
-}
+});
+
+export default ProductCard;

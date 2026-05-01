@@ -16,7 +16,7 @@ router.use(protect); // All order routes require auth
 
 router.get('/', validateApiKey, getAllOrders);
 router.post('/', createOrder);
-router.get('/myorders', getMyOrders);
+router.get('/my-orders', getMyOrders);
 router.get('/:id', getOrderById);
 router.post('/:id/verify-payment', verifyPayment);
 router.patch('/:id/mark-delivered', validateApiKey, markOrderAsDelivered);

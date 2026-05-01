@@ -9,6 +9,12 @@ export const errorHandler = (err, req, res, next) => {
     error = new ApiError(statusCode, message, error?.errors || [], err.stack);
   }
 
+  console.error('[ERROR HANDLER]', {
+    message: error.message,
+    statusCode: error.statusCode,
+    stack: error.stack,
+  });
+
   const response = {
     statusCode: error.statusCode,
     message: error.message,

@@ -1,36 +1,36 @@
-# 🛍️ Aivana — AI-Powered Fashion E-Commerce
+# 🛍️ Aivana — Premium AI-Powered Fashion E-Commerce
 
-Aivana is a premium, minimalist fashion e-commerce platform built with the MERN stack. It combines high-end aesthetics with cutting-edge AI features to provide a seamless and personalized shopping experience.
+Aivana is a state-of-the-art, minimalist fashion e-commerce platform built with the MERN stack. It combines high-end aesthetics, cutting-edge AI integrations, and a streamlined, headless-ready architecture to deliver a seamless shopping experience.
 
 ![Aivana Logo](client/public/favicon.svg)
 
 ## ✨ Key Features
 
-- **🤖 AI Stylist**: Get personalized style recommendations powered by the Groq Llama 3 model.
-- **💎 Premium Design**: Minimalist and elegant UI built with Playfair Display and Inter fonts, featuring smooth Framer Motion animations.
-- **⚡ Real-time Updates**: Live stock tracking and order status updates via Socket.io.
+- **🔍 Universal AI Search**: Intelligent, real-time debounced product suggestions with a centralized, responsive search architecture.
+- **🤖 AI Stylist**: Get personalized style recommendations powered by the Groq Llama 3 model directly from the interactive floating widget.
+- **💎 Premium Dynamic Design**: Minimalist UI built with Playfair Display & Inter fonts. Features fluid typography, interactive hover states, and smooth staggered data-loading transitions powered by Framer Motion.
+- **📱 Touch-First Responsiveness**: Flawless layout scaling across all devices, ensuring perfect touch targets, fluid product grids, and zero layout shift on mobile and tablet displays.
+- **⚡ Streamlined API Architecture**: Role-free backend secured via `x-api-key`, designed for rapid headless integration and seamless management via external clients like Postman.
 - **💳 Secure Payments**: Integrated Razorpay checkout with secure HMAC signature verification.
-- **📦 Order Tracking**: Visual shipment tracking and AWB generation.
-- **🔒 Secure Auth**: Email/password and Google OAuth 2.0 authentication.
-- **📱 Fully Responsive**: Optimized for every device, from desktop to mobile.
+- **📦 Order Tracking**: Visual shipment tracking and real-time updates via Socket.io.
 
 ## 🚀 Technology Stack
 
-### Frontend
-- **React 18** + **Vite**
-- **Tailwind CSS** (Custom Design System)
-- **Zustand** (State Management)
-- **React Query** (Server State)
-- **Framer Motion** (Animations)
-- **React Router 6**
+### Frontend Architecture
+- **React 18** + **Vite** (Ultra-fast HMR)
+- **Tailwind CSS** (Custom Design System & Fluid Utility Classes)
+- **Zustand** (Predictable Global State)
+- **TanStack Query** (Server State & Caching)
+- **Framer Motion** (Layout Animations & Layout Transitions)
+- **Swiper** (Touch-friendly Carousels)
 
-### Backend
+### Backend Architecture
 - **Node.js** & **Express**
-- **MongoDB** (Atlas)
-- **Passport.js** (Google OAuth)
+- **MongoDB** (Atlas) + **Mongoose**
+- **Streamlined Auth** (Google OAuth + JWT for users, API Keys for admin/data ops)
 - **Socket.io** (Real-time events)
-- **Cloudinary** (Image Management)
-- **Brevo** (Transactional Emails)
+- **Cloudinary** (Optimized Image Management)
+- **Brevo** (Transactional Email Automation)
 
 ## 🛠️ Local Setup
 
@@ -74,8 +74,9 @@ API_KEY=aivana_secret_key_2026
 ### 4. Run the application
 ```bash
 # From the root directory
-npm run dev
+npm run dev:all
 ```
+*(Alternatively, run `npm run dev` in the client directory and `npm run dev` in the server directory).*
 
 The frontend will run on `http://localhost:5173` and the backend on `http://localhost:5000`.
 

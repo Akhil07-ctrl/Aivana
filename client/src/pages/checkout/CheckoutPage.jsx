@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import useCartStore from '../../store/cartStore';
 import axiosInstance from '../../api/axiosInstance';
 import PageWrapper from '../../components/layout/PageWrapper';
+import OptimizedImage from '../../components/ui/OptimizedImage';
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useCartStore();
@@ -196,7 +197,7 @@ export default function CheckoutPage() {
               {cart.items.map((item, idx) => (
                 <div key={idx} className="flex gap-4">
                   <div className="w-16 h-20 bg-cream-100 rounded-md overflow-hidden bg-white/10 flex-shrink-0">
-                    <img src={item.product?.images?.[0]?.url || 'https://via.placeholder.com/100'} alt="product" className="w-full h-full object-cover" />
+                    <OptimizedImage src={item.product?.images?.[0]?.url || 'https://via.placeholder.com/100'} alt="product" width={100} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 text-sm">
                     <p className="font-semibold line-clamp-1">{item.product?.name}</p>
@@ -206,7 +207,7 @@ export default function CheckoutPage() {
                     </p>
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-cream-300">Qty: {item.quantity}</span>
-                      <span className="font-bold">${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-bold">₹{(item.price * item.quantity)?.toLocaleString('en-IN') || 'N/A'}</span>
                     </div>
                   </div>
                 </div>
@@ -216,21 +217,21 @@ export default function CheckoutPage() {
             <div className="space-y-3 text-sm mb-6 border-b border-white/20 pb-6">
               <div className="flex justify-between text-cream-300">
                 <span>Subtotal</span>
-                <span>${cart.totalPrice.toFixed(2)}</span>
+                <span>₹{cart.totalPrice?.toLocaleString('en-IN') || 'N/A'}</span>
               </div>
               <div className="flex justify-between text-cream-300">
                 <span>Estimated Tax (18%)</span>
-                <span>${taxPrice.toFixed(2)}</span>
+                <span>₹{taxPrice?.toLocaleString('en-IN') || 'N/A'}</span>
               </div>
               <div className="flex justify-between text-cream-300">
                 <span>Shipping</span>
-                <span>{shippingPrice === 0 ? 'Free' : `$${shippingPrice.toFixed(2)}`}</span>
+                <span>{shippingPrice === 0 ? 'Free' : `₹${shippingPrice?.toLocaleString('en-IN')}`}</span>
               </div>
             </div>
 
             <div className="flex justify-between text-xl font-bold mb-8">
               <span>Total</span>
-              <span>${finalTotal.toFixed(2)}</span>
+              <span>₹{finalTotal?.toLocaleString('en-IN') || 'N/A'}</span>
             </div>
 
             <button

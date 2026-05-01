@@ -71,23 +71,22 @@ export default function OrderHistoryPage() {
                         <FiClock size={14} /> {new Date(order.createdAt).toLocaleDateString()}
                       </span>
                       <span className="w-1 h-1 bg-cream-300 rounded-full" />
-                      <span className="font-medium text-ink">₹{order.totalAmount.toLocaleString()}</span>
+                      <span className="font-medium text-ink">₹{order.totalPrice.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
-                  <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${
-                    order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                    order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
-                    'bg-cream-200 text-ink-muted'
-                  }`}>
-                    {order.status === 'delivered' ? <FiCheckCircle /> : 
-                     order.status === 'shipped' ? <FiTruck /> : <FiClock />}
-                    {order.status}
+                  <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${order.isDelivered ? 'bg-green-100 text-green-700' :
+                      order.isPaid ? 'bg-blue-100 text-blue-700' :
+                        'bg-cream-200 text-ink-muted'
+                    }`}>
+                    {order.isDelivered ? <FiCheckCircle /> :
+                      order.isPaid ? <FiTruck /> : <FiClock />}
+                    {order.isDelivered ? 'Delivered' : order.isPaid ? 'Processing' : 'Pending Payment'}
                   </div>
-                  
-                  <Link 
+
+                  <Link
                     to={`/track-order/${order._id}`}
                     className="btn-outline py-2 px-6 rounded-full text-xs uppercase tracking-widest"
                   >

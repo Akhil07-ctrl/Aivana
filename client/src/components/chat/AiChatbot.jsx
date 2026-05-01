@@ -49,11 +49,11 @@ export default function AiChatbot() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 w-16 h-16 bg-rose-brand text-white rounded-full shadow-[0_8px_30px_rgb(232,80,106,0.3)] flex items-center justify-center hover:scale-110 transition-transform z-50 overflow-hidden group"
+            className="fixed bottom-4 right-4 md:bottom-6 md:right-6 w-14 h-14 md:w-16 md:h-16 bg-rose-brand text-white rounded-full shadow-[0_8px_30px_rgb(232,80,106,0.3)] flex items-center justify-center hover:scale-110 transition-transform z-50 overflow-hidden group"
           >
             <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity" />
-            <FiStar className="w-8 h-8 absolute animate-ping opacity-70 fill-white" />
-            <FiMessageSquare size={28} className="relative z-10" />
+            <FiStar className="w-6 h-6 md:w-8 md:h-8 absolute animate-ping opacity-70 fill-white" />
+            <FiMessageSquare size={24} className="relative z-10 md:w-7 md:h-7" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -65,7 +65,7 @@ export default function AiChatbot() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 sm:w-[400px] w-[calc(100vw-3rem)] h-[550px] max-h-[80vh] bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden z-50 border border-cream-200 pointer-events-auto"
+            className="fixed bottom-4 right-4 left-4 md:left-auto md:bottom-6 md:right-6 md:w-[400px] h-[600px] max-h-[85vh] bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden z-50 border border-cream-200 pointer-events-auto"
           >
             {/* Header */}
             <div className="bg-ink p-5 flex justify-between items-center relative overflow-hidden">

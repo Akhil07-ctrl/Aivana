@@ -71,7 +71,7 @@ const productSchema = new mongoose.Schema(
 );
 
 // Pre-save hook to generate slug and calculate total stock
-productSchema.pre('save', async function (next) {
+productSchema.pre('save', async function () {
   if (this.isModified('name')) {
     let baseSlug = slugify(this.name, { lower: true, strict: true, replacement: '-' });
     let uniqueSlug = baseSlug;
@@ -89,9 +89,11 @@ productSchema.pre('save', async function (next) {
   if (this.isModified('variants') || this.isNew) {
     this.totalStock = this.variants.reduce((acc, curr) => acc + (curr.stock || 0), 0);
   }
-
-  next();
 });
+
+// Compound indexes for common query patterns
+productSchema.index({ status: 1, category: 1, createdAt: -1 }); // Main listing: filter by status+category, sort by date
+productSchema.index({ status: 1, price: 1 });                    // Price-sorted queries
 
 const Product = mongoose.model('Product', productSchema);
 export default Product;

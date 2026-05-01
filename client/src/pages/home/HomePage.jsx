@@ -1,6 +1,6 @@
 import PageWrapper from '../../components/layout/PageWrapper';
-import HeroSection from './HeroSection';
-import FeaturedProducts from './FeaturedProducts';
+import HeroSection from '../../components/home/HeroSection';
+import FeaturedProducts from '../../components/home/FeaturedProducts';
 import { motion } from 'framer-motion';
 
 export default function HomePage() {

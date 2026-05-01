@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import authApi from '../api/authApi';
 import toast from 'react-hot-toast';
 
-const useAuthStore = create((set) => ({
+const useAuthStore = create((set, get) => ({
   user: null,
   isLoading: false,
   isInitialized: false,
@@ -13,7 +13,7 @@ const useAuthStore = create((set) => ({
     try {
       set({ isLoading: true });
       const res = await authApi.login(credentials);
-      set({ user: res.data.data.user });
+      set({ user: res.data.data });
       toast.success('Welcome back! 👋');
       return res.data;
     } catch (error) {
@@ -29,7 +29,7 @@ const useAuthStore = create((set) => ({
     try {
       set({ isLoading: true });
       const res = await authApi.register(userData);
-      set({ user: res.data.data.user });
+      set({ user: res.data.data });
       toast.success('Account created successfully! 🎉');
       return res.data;
     } catch (error) {
@@ -42,10 +42,13 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
+    const { user } = get();
     try {
       await authApi.logout();
       set({ user: null });
-      toast.success('Logged out successfully');
+      if (user) {
+        toast.success('Logged out successfully');
+      }
     } catch (error) {
       console.error('Logout failed:', error);
       // Still clear user on client side
@@ -57,7 +60,7 @@ const useAuthStore = create((set) => ({
     try {
       set({ isLoading: true });
       const res = await authApi.getMe();
-      set({ user: res.data.data.user, isInitialized: true });
+      set({ user: res.data.data, isInitialized: true });
     } catch (error) {
       set({ user: null, isInitialized: true });
     } finally {

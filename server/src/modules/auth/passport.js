@@ -2,6 +2,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../user/user.model.js';
 
+// Google Strategy
 passport.use(
   new GoogleStrategy(
     {
@@ -11,11 +12,9 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Check if user already exists with this Google ID
         let user = await User.findOne({ googleId: profile.id });
         if (user) return done(null, user);
 
-        // Check if email already registered (link accounts)
         user = await User.findOne({ email: profile.emails[0].value });
         if (user) {
           user.googleId = profile.id;
@@ -26,13 +25,12 @@ passport.use(
           return done(null, user);
         }
 
-        // Create new user via Google
         user = await User.create({
           name: profile.displayName,
           email: profile.emails[0].value,
           googleId: profile.id,
           avatar: { url: profile.photos[0]?.value || '', publicId: '' },
-          isVerified: true, // Google emails are pre-verified
+          isVerified: true,
         });
 
         return done(null, user);

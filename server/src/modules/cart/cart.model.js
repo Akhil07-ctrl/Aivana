@@ -40,9 +40,8 @@ const cartSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save to calculate total price automatically
-cartSchema.pre('save', function (next) {
+cartSchema.pre('save', async function () {
   this.totalPrice = this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  next();
 });
 
 const Cart = mongoose.model('Cart', cartSchema);

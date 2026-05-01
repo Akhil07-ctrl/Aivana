@@ -16,7 +16,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 // @route   GET /api/products
 // @access  Public
 export const getProducts = asyncHandler(async (req, res) => {
-  const { category, search, sort, page = 1, limit = 12 } = req.query;
+  const { category, search, sort, page = 1, limit = 12, minPrice, maxPrice } = req.query;
 
   let query = { status: 'active' };
 
@@ -27,6 +27,12 @@ export const getProducts = asyncHandler(async (req, res) => {
       { description: { $regex: search, $options: 'i' } },
     ];
   }
+  
+  if ((minPrice !== undefined && minPrice !== '') || (maxPrice !== undefined && maxPrice !== '')) {
+    query.price = {};
+    if (minPrice !== undefined && minPrice !== '') query.price.$gte = Number(minPrice);
+    if (maxPrice !== undefined && maxPrice !== '') query.price.$lte = Number(maxPrice);
+  }
 
   // Sorting logic
   let sortOption = { createdAt: -1 };
@@ -35,6 +41,8 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const products = await Product.find(query)
     .sort(sortOption)
+    .select('name slug price msrp images category totalStock averageRating numOfReviews status')
+    .lean()
     .limit(limit * 1)
     .skip((page - 1) * limit);
 

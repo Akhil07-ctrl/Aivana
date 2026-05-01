@@ -6,7 +6,7 @@ import { FiFilter } from 'react-icons/fi';
 import axiosInstance from '../../api/axiosInstance';
 import PageWrapper from '../../components/layout/PageWrapper';
 import ProductCard from '../../components/product/ProductCard';
-import FilterSidebar from './FilterSidebar';
+import FilterSidebar from '../../components/shop/FilterSidebar';
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -14,31 +14,44 @@ export default function ShopPage() {
 
   // States derived from URL or default
   const currentCategory = searchParams.get('category') || '';
-  const currentSort     = searchParams.get('sort') || 'newest';
-  const currentPage     = parseInt(searchParams.get('page') || '1', 10);
+  const currentSearch = searchParams.get('search') || '';
+  const currentSort = searchParams.get('sort') || 'newest';
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const minPrice = searchParams.get('minPrice') || '';
+  const maxPrice = searchParams.get('maxPrice') || '';
 
   // Keep URL in sync
   const updateParams = (key, value) => {
     const newParams = new URLSearchParams(searchParams);
     if (value) newParams.set(key, value);
     else newParams.delete(key);
-    
+
     // Reset page to 1 on filter/sort change
     if (key !== 'page') newParams.set('page', '1');
-    
+
+    setSearchParams(newParams);
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    const newParams = new URLSearchParams();
+    if (currentSearch) newParams.set('search', currentSearch);
     setSearchParams(newParams);
   };
 
   // Fetch products from backend
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['products', currentCategory, currentSort, currentPage],
+    queryKey: ['products', currentCategory, currentSearch, currentSort, currentPage, minPrice, maxPrice],
     queryFn: async () => {
       const res = await axiosInstance.get('/products', {
         params: {
           category: currentCategory,
+          search: currentSearch,
           sort: currentSort,
           page: currentPage,
-          limit: 12
+          limit: 12,
+          minPrice: minPrice || undefined,
+          maxPrice: maxPrice || undefined
         }
       });
       return res.data;
@@ -54,14 +67,14 @@ export default function ShopPage() {
       {/* Shop Header */}
       <div className="bg-cream-50 border-b border-cream-200 py-12 lg:py-16">
         <div className="container-main text-center">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="font-display text-4xl lg:text-5xl font-bold text-ink mb-4"
           >
-            {currentCategory ? `${currentCategory} Collection` : 'All Products'}
+            {currentSearch ? `Results for "${currentSearch}"` : currentCategory ? `${currentCategory} Collection` : 'All Products'}
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -74,15 +87,25 @@ export default function ShopPage() {
 
       {/* Main Shop Content */}
       <div className="container-main py-12 flex flex-col lg:flex-row gap-10">
-        
+
         {/* Sidebar (Desktop + Mobile overlay handled inside) */}
-        <FilterSidebar 
-          currentCategory={currentCategory} 
+        <FilterSidebar
+          currentCategory={currentCategory}
           setCategory={(val) => updateParams('category', val)}
           currentSort={currentSort}
           setSort={(val) => updateParams('sort', val)}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          setPriceRange={(min, max) => {
+            const newParams = new URLSearchParams(searchParams);
+            if (min) newParams.set('minPrice', min); else newParams.delete('minPrice');
+            if (max) newParams.set('maxPrice', max); else newParams.delete('maxPrice');
+            newParams.set('page', '1');
+            setSearchParams(newParams);
+          }}
           isMobileOpen={mobileFiltersOpen}
           closeMobile={() => setMobileFiltersOpen(false)}
+          clearFilters={clearFilters}
         />
 
         {/* Product Grid Area */}
@@ -92,7 +115,7 @@ export default function ShopPage() {
             <span className="text-sm font-semibold text-ink-muted">
               {data?.data?.totalProducts || 0} products found
             </span>
-            <button 
+            <button
               onClick={() => setMobileFiltersOpen(true)}
               className="flex items-center gap-2 btn-outline px-4 py-2 text-sm"
             >
@@ -126,7 +149,7 @@ export default function ShopPage() {
               <div className="text-4xl mb-4">🔍</div>
               <h3 className="font-display text-2xl font-bold text-ink mb-2">No products found</h3>
               <p className="text-ink-muted">Try adjusting your filters or category.</p>
-              <button 
+              <button
                 onClick={() => { updateParams('category', ''); updateParams('search', ''); }}
                 className="mt-6 btn-primary"
               >
@@ -135,7 +158,19 @@ export default function ShopPage() {
             </div>
           ) : (
             <>
-              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+              <motion.div 
+                layout 
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.1 }
+                  }
+                }}
+                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8"
+              >
                 <AnimatePresence mode="popLayout">
                   {products.map(product => (
                     <ProductCard key={product._id} product={product} />
@@ -150,11 +185,10 @@ export default function ShopPage() {
                     <button
                       key={i}
                       onClick={() => updateParams('page', String(i + 1))}
-                      className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium transition-all ${
-                        currentPage === i + 1 
-                          ? 'bg-ink text-white' 
-                          : 'bg-cream-100 text-ink-muted hover:bg-cream-200 hover:text-ink'
-                      }`}
+                      className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium transition-all ${currentPage === i + 1
+                        ? 'bg-ink text-white'
+                        : 'bg-cream-100 text-ink-muted hover:bg-cream-200 hover:text-ink'
+                        }`}
                     >
                       {i + 1}
                     </button>

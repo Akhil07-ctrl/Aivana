@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion';
-import { FiHeart, FiShoppingCart } from 'react-icons/fi';
+import { FiHeart } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import PageWrapper from '../../components/layout/PageWrapper';
 import useWishlistStore from '../../store/wishlistStore';

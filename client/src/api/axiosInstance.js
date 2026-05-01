@@ -17,8 +17,10 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear auth state and redirect to login
-      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      // Don't trigger global logout for the initial "fetchMe" check
+      if (!error.config.url.endsWith('/auth/me')) {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      }
     }
     return Promise.reject(error);
   }
