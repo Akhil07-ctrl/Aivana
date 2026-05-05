@@ -3,7 +3,8 @@ import ApiError from '../../utils/ApiError.js';
 import ApiResponse from '../../utils/ApiResponse.js';
 import User from '../user/user.model.js';
 import { generateAccessToken, setTokenCookie, clearTokenCookie } from '../../utils/generateToken.js';
-import { sendEmail, generateWelcomeEmail } from '../../utils/sendEmail.js';
+import { sendEmail, generateWelcomeEmail, generateOtpEmail } from '../../utils/sendEmail.js';
+import admin from '../../config/firebase.js';
 
 // @desc  Register new user
 // @route POST /api/auth/register
@@ -12,6 +13,11 @@ export const register = asyncHandler(async (req, res) => {
 
   if (!name || !email || !password)
     throw new ApiError(400, 'Please provide name, email and password');
+
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    throw new ApiError(400, 'Password must be at least 8 characters and include both letters and numbers');
+  }
 
   const exists = await User.findOne({ email });
   if (exists) throw new ApiError(409, 'Email already registered');
@@ -90,4 +96,172 @@ export const googleAuthCallback = asyncHandler(async (req, res) => {
   setTokenCookie(res, token);
   // Redirect to frontend
   res.redirect(`${process.env.CLIENT_URL}/oauth-success`);
+});
+
+// @desc  Forgot password (Generate OTP)
+// @route POST /api/auth/forgot-password
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) throw new ApiError(400, 'Please provide an email address');
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    // Return 200 even if user not found to prevent email enumeration attacks
+    return res.json(new ApiResponse(200, null, 'If that email is registered, an OTP has been sent.'));
+  }
+
+  // Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Save OTP and expiry (10 minutes from now)
+  user.resetPasswordOtp = otp;
+  user.resetPasswordOtpExpires = Date.now() + 10 * 60 * 1000;
+  await user.save();
+
+  // Send Email
+  try {
+    const isSent = await sendEmail({
+      to: user.email,
+      subject: 'Aivana Password Reset OTP 🔐',
+      template: generateOtpEmail(otp, user)
+    });
+    
+    if (!isSent) {
+      throw new Error('Email service failed to send');
+    }
+    
+    res.json(new ApiResponse(200, null, 'OTP sent to email successfully'));
+  } catch (error) {
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordOtpExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    
+    throw new ApiError(500, 'There was an error sending the email. Please check your email service configuration.');
+  }
+});
+
+// @desc  Reset password using OTP
+// @route POST /api/auth/reset-password
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    throw new ApiError(400, 'Please provide email, OTP, and new password');
+  }
+
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    throw new ApiError(400, 'Password must be at least 8 characters and include both letters and numbers');
+  }
+
+  const user = await User.findOne({ 
+    email, 
+    resetPasswordOtp: otp,
+    resetPasswordOtpExpires: { $gt: Date.now() } 
+  }).select('+password');
+
+  if (!user) {
+    throw new ApiError(400, 'OTP is invalid or has expired');
+  }
+
+  // Update password and clear OTP fields
+  user.password = newPassword;
+  user.resetPasswordOtp = undefined;
+  user.resetPasswordOtpExpires = undefined;
+  await user.save();
+
+  res.json(new ApiResponse(200, null, 'Password reset successful. You can now login.'));
+});
+
+// @desc  Login/Register using Firebase Phone Auth
+// @route POST /api/auth/firebase-login
+export const firebasePhoneAuth = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+  
+  if (!idToken) throw new ApiError(400, 'Firebase ID token is required');
+  if (!admin) throw new ApiError(500, 'Firebase Admin SDK not initialized on server');
+  
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { phone_number, uid } = decodedToken;
+    
+    if (!phone_number) throw new ApiError(400, 'Token does not contain a phone number');
+
+    let user = await User.findOne({ 
+      $or: [{ phone: phone_number }, { firebaseUid: uid }] 
+    });
+
+    if (user) {
+      if (!user.firebaseUid) {
+        user.firebaseUid = uid;
+        await user.save();
+      }
+      
+      const token = generateAccessToken(user._id, user.role);
+      setTokenCookie(res, token);
+      
+      return res.json(
+        new ApiResponse(200, {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+        }, 'Logged in via Phone successfully')
+      );
+    } else {
+      user = await User.create({
+        name: 'New User', // Placeholder for new phone registration
+        phone: phone_number,
+        firebaseUid: uid,
+      });
+
+      const token = generateAccessToken(user._id, user.role);
+      setTokenCookie(res, token);
+
+      return res.status(201).json(
+        new ApiResponse(201, {
+          _id: user._id,
+          name: user.name,
+          phone: user.phone,
+          role: user.role,
+          isNewUser: true,
+        }, 'Account created via Phone')
+      );
+    }
+  } catch (error) {
+    throw new ApiError(401, 'Invalid Firebase token: ' + error.message);
+  }
+});
+
+// @desc  Link Phone to existing account
+// @route POST /api/auth/link-phone
+export const linkPhone = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+  
+  if (!idToken) throw new ApiError(400, 'Firebase ID token is required');
+  if (!admin) throw new ApiError(500, 'Firebase Admin SDK not initialized on server');
+  
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { phone_number, uid } = decodedToken;
+    
+    if (!phone_number) throw new ApiError(400, 'Token does not contain a phone number');
+
+    const exists = await User.findOne({ phone: phone_number, _id: { $ne: req.user._id } });
+    if (exists) {
+      throw new ApiError(409, 'This phone number is already linked to another account');
+    }
+
+    const user = await User.findById(req.user._id);
+    user.phone = phone_number;
+    user.firebaseUid = uid;
+    await user.save();
+    
+    return res.json(new ApiResponse(200, user, 'Phone number linked successfully'));
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(401, 'Invalid Firebase token: ' + error.message);
+  }
 });

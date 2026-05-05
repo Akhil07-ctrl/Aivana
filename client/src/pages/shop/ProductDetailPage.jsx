@@ -6,8 +6,8 @@ import { FiChevronLeft, FiHeart, FiShare2, FiTruck, FiShield } from 'react-icons
 import axiosInstance from '../../api/axiosInstance';
 import PageWrapper from '../../components/layout/PageWrapper';
 import SimilarProducts from '../../components/product/SimilarProducts';
-import RecommendedProducts from '../../components/product/RecommendedProducts';
 import ShareModal from '../../components/ui/ShareModal';
+import SizeGuideModal from '../../components/ui/SizeGuideModal';
 import toast from 'react-hot-toast';
 import OptimizedImage from '../../components/ui/OptimizedImage';
 import useCartStore from '../../store/cartStore';
@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const { addToCart, isLoading: isAddingToCart } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const { user } = useAuthStore();
@@ -57,18 +58,19 @@ export default function ProductDetailPage() {
       return toast.error('This combination is out of stock');
     }
 
-    if (!user) {
-      toast.error('Please login to add items to cart');
-      navigate('/login');
-      return;
-    }
-
     try {
       await addToCart({
         productId: product._id,
         quantity: 1,
         size: selectedSize || undefined,
-        color: selectedColor || undefined
+        color: selectedColor || undefined,
+        productData: {
+          _id: product._id,
+          name: product.name,
+          slug: product.slug,
+          price: product.price,
+          images: product.images,
+        }
       });
     } catch (error) {
       console.error('Add to cart error:', error);
@@ -276,7 +278,15 @@ export default function ProductDetailPage() {
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-semibold text-ink tracking-wide">Size</h3>
-                    <button className="text-xs text-ink-muted underline hover:text-ink">Size Guide</button>
+                    <button 
+                      onClick={() => setIsSizeGuideOpen(true)}
+                      className="flex items-center gap-1.5 text-xs font-bold text-rose-brand hover:text-rose-dark transition-colors px-3 py-1.5 bg-rose-brand/5 rounded-full border border-rose-brand/10"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 15.5H13M9 13H15M7 10.5H17M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
+                      </svg>
+                      Size Guide
+                    </button>
                   </div>
                   <div className="flex flex-wrap gap-3">
                     {availableSizes.map(size => (
@@ -349,14 +359,18 @@ export default function ProductDetailPage() {
         {/* Similar Products */}
         <SimilarProducts productId={product._id} category={product.category} />
 
-        {/* AI Recommendations */}
-        <RecommendedProducts categoryContext={product.category} />
-
         {/* Share Modal */}
         <ShareModal
           isOpen={isShareOpen}
           onClose={() => setIsShareOpen(false)}
           product={product}
+        />
+
+        {/* Size Guide Modal */}
+        <SizeGuideModal
+          isOpen={isSizeGuideOpen}
+          onClose={() => setIsSizeGuideOpen(false)}
+          category={product.category}
         />
       </div>
     </PageWrapper>

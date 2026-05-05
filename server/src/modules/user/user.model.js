@@ -5,20 +5,30 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Name is required'],
       trim: true,
       maxlength: [50, 'Name cannot exceed 50 characters'],
+      default: 'New User',
     },
     email: {
       type: String,
-      required: [true, 'Email is required'],
       unique: true,
+      sparse: true,
       lowercase: true,
       trim: true,
     },
+    phone: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    firebaseUid: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     password: {
       type: String,
-      minlength: [6, 'Password must be at least 6 characters'],
+      minlength: [8, 'Password must be at least 8 characters'],
       select: false,
     },
     avatar: {
@@ -47,8 +57,8 @@ const userSchema = new mongoose.Schema(
       },
     ],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
+    resetPasswordOtp: String,
+    resetPasswordOtpExpires: Date,
   },
   { timestamps: true }
 );

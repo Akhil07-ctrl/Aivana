@@ -69,12 +69,13 @@ export default function CartDrawer() {
                 <p className="text-ink-muted mb-8 max-w-xs">
                   {user ? "Looks like you haven't added anything yet." : "Sign in to view your synced cart or start shopping now."}
                 </p>
-                <button
+                <Link
+                  to="/shop"
                   onClick={() => setCartOpen(false)}
-                  className="btn-primary"
+                  className="btn-primary inline-block py-3 px-6 rounded-md font-semibold text-center mt-4"
                 >
                   Start Shopping
-                </button>
+                </Link>
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">

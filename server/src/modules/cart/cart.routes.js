@@ -3,7 +3,8 @@ import {
   getMyCart,
   addToCart,
   updateCartItem,
-  clearCart
+  clearCart,
+  syncCart
 } from './cart.controller.js';
 import { protect } from '../../middleware/auth.middleware.js';
 
@@ -16,5 +17,6 @@ router.get('/', getMyCart);
 router.post('/items', addToCart);
 router.put('/items', updateCartItem);
 router.delete('/', clearCart);
+router.post('/sync', syncCart);
 
 export default router;

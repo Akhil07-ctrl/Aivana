@@ -31,13 +31,13 @@ const DynamicPlaceholder = ({ placeholderIndex }) => (
   </AnimatePresence>
 );
 
-const SuggestionsDropdown = ({ 
-  source, 
-  isMobile = false, 
-  activeSearchSource, 
-  searchQuery, 
-  suggestions, 
-  isSearching, 
+const SuggestionsDropdown = ({
+  source,
+  isMobile = false,
+  activeSearchSource,
+  searchQuery,
+  suggestions,
+  isSearching,
   navigate,
   setSearchQuery,
   setSuggestions,
@@ -113,7 +113,7 @@ const SuggestionsDropdown = ({
             ) : (
               <div className="py-8 px-4 text-center">
                 <p className="text-sm text-ink-muted">No products match "{searchQuery}"</p>
-                <button 
+                <button
                   onClick={() => {
                     navigate('/shop');
                     setActiveSearchSource(null);
@@ -192,7 +192,7 @@ export default function Navbar() {
 
   const handleComingSoon = (e) => {
     e.preventDefault();
-    toast.success('This feature is coming soon!', {
+    toast.success('Coming soon!', {
       icon: '✨',
       style: {
         borderRadius: '10px',
@@ -280,8 +280,8 @@ export default function Navbar() {
                         </div>
                       )}
                     </div>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => {
                         setIsMobileSearchOpen(false);
                         setSuggestions([]);
@@ -296,9 +296,9 @@ export default function Navbar() {
                 {/* Mobile Suggestions Area - Positioned outside container to avoid cropping */}
                 {isMobileSearchOpen && (
                   <div className="absolute top-full left-0 right-0 bg-white shadow-2xl border-t border-cream-100">
-                    <SuggestionsDropdown 
-                      source="mobile" 
-                      isMobile={true} 
+                    <SuggestionsDropdown
+                      source="mobile"
+                      isMobile={true}
                       activeSearchSource={activeSearchSource}
                       searchQuery={searchQuery}
                       suggestions={suggestions}
@@ -368,8 +368,8 @@ export default function Navbar() {
                 </div>
               )}
               {/* Desktop Suggestions */}
-              <SuggestionsDropdown 
-                source="desktop" 
+              <SuggestionsDropdown
+                source="desktop"
                 activeSearchSource={activeSearchSource}
                 searchQuery={searchQuery}
                 suggestions={suggestions}

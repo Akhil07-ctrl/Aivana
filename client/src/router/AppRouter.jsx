@@ -9,6 +9,7 @@ import useAuthStore from '../store/authStore';
 // Lazy-loaded page chunks — each becomes its own JS bundle
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('../pages/auth/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage'));
 const HomePage = lazy(() => import('../pages/home/HomePage'));
 const ShopPage = lazy(() => import('../pages/shop/ShopPage'));
 const ProductDetailPage = lazy(() => import('../pages/shop/ProductDetailPage'));
@@ -58,6 +59,7 @@ export default function AppRouter() {
           {/* Auth (Standalone Layout) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/oauth-success" element={<Navigate to="/" replace />} />
 
           {/* Main Application Layout (Has Navbar & Footer) */}

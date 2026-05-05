@@ -160,6 +160,7 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     className="input pl-11"
                     required
+                    minLength={8}
                   />
                 </div>
               </div>
@@ -180,6 +181,7 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     className="input pl-11"
                     required
+                    minLength={8}
                   />
                 </div>
               </div>

@@ -51,8 +51,8 @@ export default function HeroSection() {
             <Link to="/shop" className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4">
               Shop the Collection
             </Link>
-            <Link 
-              to="/categories" 
+            <Link
+              to="/categories"
               className="group flex items-center gap-2 font-semibold text-base sm:text-lg text-ink-light hover:text-rose-brand transition-all duration-300 py-3 sm:py-4 px-2"
             >
               Explore Categories
@@ -62,14 +62,14 @@ export default function HeroSection() {
                 transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                 className="inline-flex items-center"
               >
-                <svg 
-                  width="20" 
-                  height="20" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2.5" 
-                  strokeLinecap="round" 
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
                   strokeLinejoin="round"
                 >
                   <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -96,7 +96,7 @@ export default function HeroSection() {
               loading="eager"
             />
             {/* Glassmorphism Overlay for "AI Scan" effect */}
-            <motion.div 
+            <motion.div
               className="absolute inset-0 bg-gradient-to-tr from-rose-brand/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
               animate={{ opacity: [0.1, 0.3, 0.1] }}
               transition={{ duration: 4, repeat: Infinity }}
@@ -119,8 +119,9 @@ export default function HeroSection() {
           </motion.div>
 
           {/* Futuristic AI Intelligence Tags */}
+          {/* 
           <div className="absolute inset-0 z-30 pointer-events-none">
-            {/* Tag 1: Style Type */}
+            // Tag 1: Style Type
             <motion.div
               className="absolute top-[20%] left-[10%] lg:left-[-5%] bg-white/80 backdrop-blur-md border border-white/40 px-4 py-2 rounded-full shadow-lg"
               initial={{ opacity: 0, x: -20 }}
@@ -138,7 +139,7 @@ export default function HeroSection() {
               <span className="text-sm font-bold text-ink">Premium Silk</span>
             </motion.div>
 
-            {/* Tag 2: Style Fit */}
+            // Tag 2: Style Fit
             <motion.div
               className="absolute bottom-[30%] right-[5%] lg:right-[-5%] bg-ink/90 backdrop-blur-md text-white px-4 py-2 rounded-full shadow-2xl"
               initial={{ opacity: 0, x: 20 }}
@@ -158,7 +159,7 @@ export default function HeroSection() {
               </div>
             </motion.div>
 
-            {/* Tag 3: Season */}
+            // Tag 3: Season
             <motion.div
               className="absolute top-[50%] right-[10%] lg:right-[15%] bg-white/40 backdrop-blur-sm border border-white/20 p-3 rounded-2xl shadow-xl"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -176,9 +177,10 @@ export default function HeroSection() {
               <div className="text-xs font-bold text-ink tracking-tighter">SUMMER '26</div>
             </motion.div>
           </div>
+          */}
 
           {/* Decorative AI scanning lines */}
-          <motion.div 
+          <motion.div
             className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-rose-brand/40 to-transparent z-40"
             animate={{ top: ['10%', '90%', '10%'] }}
             transition={{ duration: 6, repeat: Infinity, ease: "linear" }}

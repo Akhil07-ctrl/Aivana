@@ -8,8 +8,8 @@ export default function TrendingSlider({ products }) {
 
   // Swiper loop mode requires a minimum number of slides to function correctly without gaps.
   // If we have fewer than 6 products, we duplicate them to ensure a smooth infinite loop.
-  const displayProducts = products.length > 0 && products.length < 6 
-    ? [...products, ...products] 
+  const displayProducts = products.length > 0 && products.length < 6
+    ? [...products, ...products]
     : products;
 
   return (
@@ -37,7 +37,7 @@ export default function TrendingSlider({ products }) {
                   scale: isActive ? 1 : 0.9,
                   opacity: isActive ? 1 : 0.7,
                 }}
-                transition={{ 
+                transition={{
                   duration: 0.4,
                   ease: "easeOut"
                 }}
@@ -49,11 +49,11 @@ export default function TrendingSlider({ products }) {
           </SwiperSlide>
         ))}
       </Swiper>
-      
+
       {/* Visual Indicator for Swipe */}
       <div className="flex justify-center gap-1.5 mt-2">
         <div className="w-8 h-1 bg-rose-brand/30 rounded-full overflow-hidden">
-          <motion.div 
+          <motion.div
             className="h-full bg-rose-brand"
             animate={{ x: ["-100%", "100%"] }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}

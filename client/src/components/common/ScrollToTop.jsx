@@ -12,7 +12,7 @@ export default function ScrollToTop() {
   useEffect(() => {
     // Reset scroll to top-left of the window
     window.scrollTo(0, 0);
-    
+
     // Also reset any specific scrollable containers if needed
     // (though usually window.scrollTo is enough for standard layouts)
   }, [pathname]);

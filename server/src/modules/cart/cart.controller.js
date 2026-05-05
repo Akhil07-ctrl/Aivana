@@ -115,3 +115,50 @@ export const clearCart = asyncHandler(async (req, res) => {
 
   res.json(new ApiResponse(200, cart, 'Cart cleared'));
 });
+
+// @desc    Sync local cart with server
+// @route   POST /api/cart/sync
+// @access  Private
+export const syncCart = asyncHandler(async (req, res) => {
+  const { items } = req.body; // array of local cart items
+
+  let cart = await Cart.findOne({ user: req.user._id });
+  if (!cart) {
+    cart = await Cart.create({ user: req.user._id, items: [] });
+  }
+
+  if (items && Array.isArray(items) && items.length > 0) {
+    for (const localItem of items) {
+      if (!localItem.product) continue;
+      
+      const productId = localItem.product._id || localItem.product;
+      
+      // Verify product exists
+      const product = await Product.findById(productId);
+      if (!product) continue;
+
+      const itemIndex = cart.items.findIndex(p =>
+        p.product.toString() === productId.toString() && 
+        p.size === localItem.size && 
+        p.color === localItem.color
+      );
+
+      if (itemIndex > -1) {
+        // Ensure quantity doesn't exceed stock? For simplicity, we just add it and assume stock is handled at checkout
+        cart.items[itemIndex].quantity += localItem.quantity;
+      } else {
+        cart.items.push({
+          product: productId,
+          quantity: localItem.quantity,
+          price: product.price,
+          size: localItem.size,
+          color: localItem.color
+        });
+      }
+    }
+    await cart.save();
+  }
+
+  await cart.populate('items.product', 'name images slug');
+  res.json(new ApiResponse(200, cart, 'Cart synced successfully'));
+});

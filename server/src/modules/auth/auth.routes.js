@@ -6,6 +6,10 @@ import {
   logout,
   getMe,
   googleAuthCallback,
+  forgotPassword,
+  resetPassword,
+  firebasePhoneAuth,
+  linkPhone
 } from './auth.controller.js';
 import { protect } from '../../middleware/auth.middleware.js';
 import { authRateLimiter } from '../../middleware/rateLimiter.js';
@@ -17,6 +21,14 @@ router.post('/register', authRateLimiter, register);
 router.post('/login', authRateLimiter, login);
 router.post('/logout', logout);
 router.get('/me', protect, getMe);
+
+// Firebase Phone Auth
+router.post('/firebase-login', authRateLimiter, firebasePhoneAuth);
+router.post('/link-phone', protect, authRateLimiter, linkPhone);
+
+// Password Reset Flow
+router.post('/forgot-password', authRateLimiter, forgotPassword);
+router.post('/reset-password', authRateLimiter, resetPassword);
 
 // Google OAuth
 router.get('/google',
