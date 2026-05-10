@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { FiX, FiChevronDown } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const CATEGORIES = ['Dresses', 'Tops', 'Outerwear', 'Activewear', 'Accessories', 'Jewelry', 'Sale'];
+import { PRIMARY_CATEGORIES, PRODUCT_TYPES } from '../../constants/categories';
+
 const SORTS = [
   { label: 'Newest Arrivals', value: 'newest' },
   { label: 'Price: Low to High', value: 'price_asc' },
@@ -12,6 +13,8 @@ const SORTS = [
 export default function FilterSidebar({
   currentCategory,
   setCategory,
+  currentSubcategory,
+  setSubcategory,
   currentSort,
   setSort,
   minPrice,
@@ -43,9 +46,9 @@ export default function FilterSidebar({
         <div className="flex items-center justify-between w-full lg:w-auto">
           <h2 className="font-display font-bold text-2xl text-ink lg:hidden">Filters</h2>
           <div className="flex items-center gap-4">
-            {(currentCategory || minPrice || maxPrice || currentSort !== 'newest') && (
-              <button 
-                onClick={clearFilters} 
+            {(currentCategory || currentSubcategory || minPrice || maxPrice || currentSort !== 'newest') && (
+              <button
+                onClick={clearFilters}
                 className="text-sm font-semibold text-rose-brand hover:text-rose-700 transition-colors"
               >
                 Clear All
@@ -58,15 +61,15 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* Sort (Mobile friendly placement) */}
+      {/* Sort */}
       <div>
-        <h3 className="text-sm font-bold text-ink uppercase tracking-wider mb-4 border-b border-cream-200 pb-2">
+        <h3 className="text-xs font-bold text-ink uppercase tracking-[0.1em] mb-4 border-b border-cream-200 pb-2">
           Sort By
         </h3>
         <div className="relative">
           <button
             onClick={() => setIsSortOpen(!isSortOpen)}
-            className="w-full bg-cream-100 border-none rounded-lg p-3 text-ink text-sm flex justify-between items-center focus:ring-2 focus:ring-rose-brand outline-none transition-shadow"
+            className="w-full bg-cream-100/50 border border-transparent rounded-xl p-3 text-ink text-sm flex justify-between items-center focus:bg-white focus:border-rose-brand/30 transition-all"
           >
             <span className="font-medium">{SORTS.find(s => s.value === currentSort)?.label || 'Sort By'}</span>
             <FiChevronDown className={`transition-transform duration-300 ${isSortOpen ? 'rotate-180' : ''}`} />
@@ -78,7 +81,6 @@ export default function FilterSidebar({
                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
                 className="absolute top-full left-0 right-0 mt-2 bg-white border border-cream-200 rounded-xl shadow-xl z-20 overflow-hidden"
               >
                 {SORTS.map(s => (
@@ -96,57 +98,70 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* Categories */}
+      {/* Main Categories (Gender) */}
       <div>
-        <h3 className="text-sm font-bold text-ink uppercase tracking-wider mb-4 border-b border-cream-200 pb-2">
-          Categories
+        <h3 className="text-xs font-bold text-ink uppercase tracking-[0.1em] mb-4 border-b border-cream-200 pb-2">
+          Collections
         </h3>
-        <ul className="space-y-3">
+        <ul className="space-y-1">
           <li>
             <button
               onClick={() => setCategory('')}
-              className={`text-sm tracking-wide transition-colors ${!currentCategory ? 'text-rose-brand font-semibold' : 'text-ink-light hover:text-ink'
-                }`}
+              className={`w-full text-left text-sm py-2 px-3 rounded-lg transition-all ${!currentCategory ? 'bg-rose-50 text-rose-brand font-bold' : 'text-ink-light hover:bg-cream-50 hover:text-ink'}`}
             >
               All Products
             </button>
           </li>
-          {CATEGORIES.map(cat => (
-            <li key={cat}>
+          {PRIMARY_CATEGORIES.map(cat => (
+            <li key={cat.id}>
               <button
-                onClick={() => setCategory(cat)}
-                className={`text-sm tracking-wide transition-colors ${currentCategory === cat ? 'text-rose-brand font-semibold' : 'text-ink-light hover:text-ink'
-                  }`}
+                onClick={() => setCategory(cat.name)}
+                className={`w-full text-left text-sm py-2 px-3 rounded-lg transition-all ${currentCategory === cat.name ? 'bg-rose-50 text-rose-brand font-bold' : 'text-ink-light hover:bg-cream-50 hover:text-ink'}`}
               >
-                {cat}
+                {cat.name}
               </button>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* Placeholder for future filters */}
+      {/* Product Types (Subcategories) */}
       <div>
-        <h3 className="text-sm font-bold text-ink uppercase tracking-wider mb-4 border-b border-cream-200 pb-2">
+        <h3 className="text-xs font-bold text-ink uppercase tracking-[0.1em] mb-4 border-b border-cream-200 pb-2">
+          Product Type
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {PRODUCT_TYPES.map(type => (
+            <button
+              key={type}
+              onClick={() => setSubcategory(currentSubcategory === type ? '' : type)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all border ${currentSubcategory === type ? 'bg-ink border-ink text-white shadow-lg' : 'bg-white border-cream-200 text-ink-muted hover:border-ink hover:text-ink'}`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Price Range */}
+      <div>
+        <h3 className="text-xs font-bold text-ink uppercase tracking-[0.1em] mb-4 border-b border-cream-200 pb-2">
           Price Range
         </h3>
-        <div className="py-2">
-          {/* Curated Price Brackets */}
-          <div className="space-y-1">
-            {PRICE_BRACKETS.map((bracket, idx) => {
-              const isActive = minPrice === bracket.min && maxPrice === bracket.max;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => setPriceRange(bracket.min, bracket.max)}
-                  className={`w-full text-left text-sm py-2 px-3 rounded-lg transition-all duration-200 flex items-center justify-between group ${isActive ? 'bg-rose-50 text-rose-brand font-semibold' : 'text-ink-light hover:bg-cream-50 hover:text-ink'}`}
-                >
-                  {bracket.label}
-                  {isActive && <motion.div layoutId="activeFilter" className="w-1.5 h-1.5 rounded-full bg-rose-brand" />}
-                </button>
-              )
-            })}
-          </div>
+        <div className="space-y-1">
+          {PRICE_BRACKETS.map((bracket, idx) => {
+            const isActive = minPrice === bracket.min && maxPrice === bracket.max;
+            return (
+              <button
+                key={idx}
+                onClick={() => setPriceRange(bracket.min, bracket.max)}
+                className={`w-full text-left text-sm py-2 px-3 rounded-lg transition-all flex items-center justify-between group ${isActive ? 'bg-rose-50 text-rose-brand font-bold' : 'text-ink-light hover:bg-cream-50 hover:text-ink'}`}
+              >
+                {bracket.label}
+                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-rose-brand" />}
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>

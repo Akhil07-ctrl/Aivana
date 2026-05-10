@@ -41,7 +41,7 @@ export default function TrackOrderPage() {
         <Link to="/shop" className="inline-flex items-center gap-2 text-ink-muted hover:text-rose-brand mb-8 transition-colors">
           <FiChevronLeft /> Back to Shop
         </Link>
-        
+
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-cream-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-cream-200 pb-6 mb-8 gap-4">
 

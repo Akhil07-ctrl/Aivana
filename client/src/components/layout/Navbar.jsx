@@ -7,6 +7,7 @@ import useAuthStore from '../../store/authStore';
 import useCartStore from '../../store/cartStore';
 import useWishlistStore from '../../store/wishlistStore';
 import axiosInstance from '../../api/axiosInstance';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 const searchPlaceholders = [
   "Search for 'Silk Dresses'...",
@@ -111,17 +112,32 @@ const SuggestionsDropdown = ({
                 <p className="text-xs font-bold text-ink-muted uppercase tracking-widest">Finding matches...</p>
               </div>
             ) : (
-              <div className="py-8 px-4 text-center">
-                <p className="text-sm text-ink-muted">No products match "{searchQuery}"</p>
+              <div className="py-12 px-6 text-center">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-16 h-16 bg-cream-100 rounded-full flex items-center justify-center mx-auto mb-4 text-ink-muted"
+                >
+                  <FiSearch size={24} />
+                </motion.div>
+                <p className="text-sm font-bold text-ink mb-1">No matches found</p>
+                <p className="text-xs text-ink-muted mb-6">We couldn't find anything for "{searchQuery}"</p>
                 <button
                   onClick={() => {
                     navigate('/shop');
                     setActiveSearchSource(null);
                     setIsMobileSearchOpen(false);
+                    setSearchQuery('');
                   }}
-                  className="mt-4 text-xs font-bold text-rose-brand underline"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-rose-brand hover:text-rose-700 transition-colors group"
                 >
                   Browse all collections
+                  <motion.span
+                    animate={{ x: [0, 4, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  >
+                    →
+                  </motion.span>
                 </button>
               </div>
             )}
@@ -148,6 +164,7 @@ export default function Navbar() {
   const [isSearching, setIsSearching] = useState(false);
   const [activeSearchSource, setActiveSearchSource] = useState(null); // 'desktop' or 'mobile'
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const { isInstallable, handleInstallClick } = usePWAInstall();
 
 
   useEffect(() => {
@@ -237,9 +254,9 @@ export default function Navbar() {
   ];
 
   const userDropdownLinks = [
-    { name: 'My Profile', path: '/profile', icon: <FiUser size={16} /> },
-    { name: 'Orders', path: '/orders', icon: <FiPackage size={16} /> },
-    { name: 'Wishlist', path: '/wishlist', icon: <FiHeart size={16} /> },
+    { name: 'My Profile', path: '/profile', hash: '#personal', icon: <FiUser size={16} /> },
+    { name: 'Orders', path: '/profile', hash: '#orders', icon: <FiPackage size={16} /> },
+    { name: 'Wishlist', path: '/profile', hash: '#wishlist', icon: <FiHeart size={16} /> },
     { name: 'Addresses', path: '/profile', hash: '#addresses', icon: <FiMapPin size={16} /> },
   ];
 
@@ -425,7 +442,7 @@ export default function Navbar() {
                   >
                     <div className="w-7 h-7 rounded-full bg-cream-200 overflow-hidden flex items-center justify-center ring-1 ring-black/5">
                       {user.avatar?.url ? (
-                        <img src={user.avatar.url} alt="Avatar" className="w-full h-full object-cover" />
+                        <img src={user.avatar.url} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       ) : (
                         <FiUser size={14} className={userMenuOpen ? "text-white/80" : "text-ink-muted"} />
                       )}
@@ -531,6 +548,19 @@ export default function Navbar() {
                   <button onClick={handleComingSoon} className="text-left text-sm font-semibold text-ink-light px-2 hover:text-rose-brand transition-colors">Contact Support</button>
                   <button onClick={handleComingSoon} className="text-left text-sm font-semibold text-ink-light px-2 hover:text-rose-brand transition-colors">FAQs</button>
                 </div>
+
+                {isInstallable && (
+                  <div className="mt-8 px-2">
+                    <button
+                      onClick={handleInstallClick}
+                      className="w-full bg-ink text-white py-4 rounded-2xl font-bold text-sm shadow-xl shadow-ink/20 flex items-center justify-center gap-3 hover:bg-rose-brand transition-all"
+                    >
+                      <FiPackage size={18} />
+                      Install App Experience
+                    </button>
+                    <p className="text-[10px] text-ink-muted/60 text-center mt-3 uppercase tracking-widest font-bold">Recommended for better performance</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>

@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiFilter } from 'react-icons/fi';
 import axiosInstance from '../../api/axiosInstance';
 import PageWrapper from '../../components/layout/PageWrapper';
 import ProductCard from '../../components/product/ProductCard';
+import RecommendedProducts from '../../components/product/RecommendedProducts';
 import FilterSidebar from '../../components/shop/FilterSidebar';
+import { FiFilter, FiSearch, FiArrowLeft, FiRefreshCw } from 'react-icons/fi';
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -14,11 +15,17 @@ export default function ShopPage() {
 
   // States derived from URL or default
   const currentCategory = searchParams.get('category') || '';
+  const currentSubcategory = searchParams.get('subcategory') || '';
   const currentSearch = searchParams.get('search') || '';
   const currentSort = searchParams.get('sort') || 'newest';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
+
+  // Scroll to top when page or filters change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentCategory, currentSubcategory, currentSearch, currentSort, currentPage, minPrice, maxPrice]);
 
   // Keep URL in sync
   const updateParams = (key, value) => {
@@ -32,20 +39,26 @@ export default function ShopPage() {
     setSearchParams(newParams);
   };
 
-  // Clear all filters
+  // Clear all filters but keep search
   const clearFilters = () => {
     const newParams = new URLSearchParams();
     if (currentSearch) newParams.set('search', currentSearch);
     setSearchParams(newParams);
   };
 
+  // Clear everything including search
+  const clearAll = () => {
+    setSearchParams(new URLSearchParams());
+  };
+
   // Fetch products from backend
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['products', currentCategory, currentSearch, currentSort, currentPage, minPrice, maxPrice],
+    queryKey: ['products', currentCategory, currentSubcategory, currentSearch, currentSort, currentPage, minPrice, maxPrice],
     queryFn: async () => {
       const res = await axiosInstance.get('/products', {
         params: {
           category: currentCategory,
+          subcategory: currentSubcategory,
           search: currentSearch,
           sort: currentSort,
           page: currentPage,
@@ -92,6 +105,8 @@ export default function ShopPage() {
         <FilterSidebar
           currentCategory={currentCategory}
           setCategory={(val) => updateParams('category', val)}
+          currentSubcategory={currentSubcategory}
+          setSubcategory={(val) => updateParams('subcategory', val)}
           currentSort={currentSort}
           setSort={(val) => updateParams('sort', val)}
           minPrice={minPrice}
@@ -145,21 +160,51 @@ export default function ShopPage() {
               <p className="text-ink-muted mt-2">Please try refreshing the page.</p>
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-32 bg-white rounded-2xl border border-cream-200">
-              <div className="text-4xl mb-4">🔍</div>
-              <h3 className="font-display text-2xl font-bold text-ink mb-2">No products found</h3>
-              <p className="text-ink-muted">Try adjusting your filters or category.</p>
-              <button
-                onClick={() => { updateParams('category', ''); updateParams('search', ''); }}
-                className="mt-6 btn-primary"
-              >
-                Clear all filters
-              </button>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center"
+            >
+              <div className="w-full text-center py-20 lg:py-32 bg-white rounded-3xl border border-cream-200 shadow-sm px-6">
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", damping: 12 }}
+                  className="w-20 h-20 bg-cream-100 rounded-full flex items-center justify-center mx-auto mb-6 text-ink-muted"
+                >
+                  <FiSearch size={40} />
+                </motion.div>
+
+                <h3 className="font-display text-2xl lg:text-3xl font-bold text-ink mb-3">No products found</h3>
+                <p className="text-ink-muted max-w-md mx-auto mb-10 leading-relaxed">
+                  We couldn't find any products matching your current filters or search criteria. Try broadening your search or resetting the filters.
+                </p>
+
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                  <button
+                    onClick={clearFilters}
+                    className="btn-outline flex items-center gap-2 px-6 py-3"
+                  >
+                    <FiRefreshCw size={18} /> Reset Filters
+                  </button>
+                  <button
+                    onClick={clearAll}
+                    className="btn-primary flex items-center gap-2 px-6 py-3"
+                  >
+                    <FiArrowLeft size={18} /> Continue Shopping
+                  </button>
+                </div>
+              </div>
+
+              {/* Suggestions */}
+              <div className="w-full mt-20">
+                <RecommendedProducts vibes={currentSearch} />
+              </div>
+            </motion.div>
           ) : (
             <>
-              <motion.div 
-                layout 
+              <motion.div
+                layout
                 initial="hidden"
                 animate="visible"
                 variants={{

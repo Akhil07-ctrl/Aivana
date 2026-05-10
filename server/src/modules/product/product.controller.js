@@ -7,27 +7,75 @@ import Product from './product.model.js';
 // @route   POST /api/products
 // @access  Private (API Key)
 export const createProduct = asyncHandler(async (req, res) => {
-  const product = await Product.create(req.body);
+  const data = req.body;
 
-  res.status(201).json(new ApiResponse(201, product, 'Product created successfully'));
+  // Helper for Update or Insert logic
+  const upsertItem = async (productData) => {
+    if (!productData.name) return null;
+
+    let product = await Product.findOne({
+      name: { $regex: `^${productData.name.trim()}$`, $options: 'i' }
+    });
+
+    if (product) {
+      // If msrp is missing in the new data, explicitly clear it
+      // so it doesn't stick from a previous version of the product.
+      if (productData.msrp === undefined) {
+        product.msrp = undefined;
+      }
+
+      // Update existing
+      Object.assign(product, productData);
+      product.status = 'active';
+      return await product.save();
+    }
+    // Create new
+    return await Product.create(productData);
+  };
+
+  // Handle Array (Bulk)
+  if (Array.isArray(data)) {
+    const results = await Promise.all(data.map(item => upsertItem(item)));
+    const successful = results.filter(r => r !== null);
+    return res.status(201).json(new ApiResponse(201, successful, `${successful.length} products processed`));
+  }
+
+  // Handle Single Object
+  if (!data.name) {
+    return res.status(400).json(new ApiResponse(400, null, 'Product name is required'));
+  }
+
+  const result = await upsertItem(data);
+  res.status(201).json(new ApiResponse(201, result, 'Product processed successfully'));
 });
 
 // @desc    Get all products (with filters & pagination)
 // @route   GET /api/products
 // @access  Public
 export const getProducts = asyncHandler(async (req, res) => {
-  const { category, search, sort, page = 1, limit = 12, minPrice, maxPrice } = req.query;
+  const { category, subcategory, search, sort, page = 1, limit = 12, minPrice, maxPrice } = req.query;
 
   let query = { status: 'active' };
 
-  if (category) query.category = category;
+  if (category) {
+    if (category === 'Sale') {
+      query.msrp = { $exists: true, $gt: 0 };
+      query.$expr = { $gt: ["$msrp", "$price"] };
+    } else {
+      query.category = { $regex: `^${category}$`, $options: 'i' };
+    }
+  }
+
+  if (subcategory) {
+    query.subcategory = { $regex: `^${subcategory}$`, $options: 'i' };
+  }
   if (search) {
     query.$or = [
       { name: { $regex: search, $options: 'i' } },
       { description: { $regex: search, $options: 'i' } },
     ];
   }
-  
+
   if ((minPrice !== undefined && minPrice !== '') || (maxPrice !== undefined && maxPrice !== '')) {
     query.price = {};
     if (minPrice !== undefined && minPrice !== '') query.price.$gte = Number(minPrice);

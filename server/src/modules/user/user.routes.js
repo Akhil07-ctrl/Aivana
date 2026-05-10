@@ -116,4 +116,57 @@ router.delete('/addresses/:addressId', protect, asyncHandler(async (req, res) =>
   return res.json(new ApiResponse(200, user, 'Address deleted'));
 }));
 
+// @desc  Add user address
+// @route POST /api/users/addresses
+router.post('/addresses', protect, asyncHandler(async (req, res) => {
+  const { fullName, phone, line1, line2, city, state, pincode, label, isDefault } = req.body;
+  const user = await User.findById(req.user._id);
+  if (!user) throw new ApiError(404, 'User not found');
+
+  const newAddress = { fullName, phone, line1, line2, city, state, pincode, label, isDefault: isDefault || false };
+
+  if (newAddress.isDefault) {
+    user.addresses.forEach(addr => addr.isDefault = false);
+  } else if (user.addresses.length === 0) {
+    newAddress.isDefault = true;
+  }
+
+  user.addresses.push(newAddress);
+  await user.save({ validateBeforeSave: false });
+
+  return res.json(new ApiResponse(201, user, 'Address added successfully'));
+}));
+
+// @desc  Update user address
+// @route PUT /api/users/addresses/:addressId
+router.put('/addresses/:addressId', protect, asyncHandler(async (req, res) => {
+  const { fullName, phone, line1, line2, city, state, pincode, label, isDefault } = req.body;
+  const user = await User.findById(req.user._id);
+  if (!user) throw new ApiError(404, 'User not found');
+
+  const address = user.addresses.id(req.params.addressId);
+  if (!address) throw new ApiError(404, 'Address not found');
+
+  if (fullName) address.fullName = fullName;
+  if (phone) address.phone = phone;
+  if (line1) address.line1 = line1;
+  if (line2 !== undefined) address.line2 = line2;
+  if (city) address.city = city;
+  if (state) address.state = state;
+  if (pincode) address.pincode = pincode;
+  if (label) address.label = label;
+
+  if (isDefault !== undefined) {
+    address.isDefault = isDefault;
+    if (isDefault) {
+      user.addresses.forEach(addr => {
+        if (addr._id.toString() !== req.params.addressId) addr.isDefault = false;
+      });
+    }
+  }
+
+  await user.save({ validateBeforeSave: false });
+  return res.json(new ApiResponse(200, user, 'Address updated successfully'));
+}));
+
 export default router;

@@ -13,7 +13,7 @@ const router = express.Router();
 
 // Public routes
 router.get('/:productId', getProductReviews);
-router.post('/:productId/helpful', markHelpful);
+router.post('/:reviewId/helpful', markHelpful);
 
 // Protected routes (requires authentication)
 router.use(protect);

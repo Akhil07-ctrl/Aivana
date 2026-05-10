@@ -53,7 +53,7 @@ const productSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'draft', 'archived'],
+      enum: ['active', 'draft', 'archived', 'inactive'],
       default: 'active',
     },
     averageRating: {

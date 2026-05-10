@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import AppRouter from './router/AppRouter';
 import useAuthStore from './store/authStore';
 import useCartStore from './store/cartStore';
 import NamePromptModal from './components/auth/NamePromptModal';
+import GoogleOneTap from './components/auth/GoogleOneTap';
+import LoadingScreen from './components/ui/LoadingScreen';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,7 +19,7 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
-  const { fetchMe, user } = useAuthStore();
+  const { fetchMe, user, isInitialized } = useAuthStore();
   const { fetchCart } = useCartStore();
   const [showNamePrompt, setShowNamePrompt] = useState(false);
 
@@ -27,7 +29,11 @@ export default function App() {
 
     // Listen for 401 from Axios interceptor
     const handle401 = () => {
-      useAuthStore.getState().logout();
+      const { user, logout } = useAuthStore.getState();
+      if (user) {
+        toast.error('Your session has expired. Please log in again.');
+      }
+      logout();
     };
     window.addEventListener('auth:unauthorized', handle401);
     return () => window.removeEventListener('auth:unauthorized', handle401);
@@ -52,8 +58,21 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AnimatePresence mode="wait">
-        <AppRouter />
+        {!isInitialized ? (
+          <LoadingScreen key="loader" />
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <AppRouter />
+          </motion.div>
+        )}
       </AnimatePresence>
+
+      <GoogleOneTap />
 
       {showNamePrompt && (
         <NamePromptModal onComplete={() => setShowNamePrompt(false)} />

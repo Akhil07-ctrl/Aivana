@@ -9,7 +9,8 @@ import {
   forgotPassword,
   resetPassword,
   firebasePhoneAuth,
-  linkPhone
+  linkPhone,
+  googleOneTap
 } from './auth.controller.js';
 import { protect } from '../../middleware/auth.middleware.js';
 import { authRateLimiter } from '../../middleware/rateLimiter.js';
@@ -38,5 +39,8 @@ router.get('/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth_failed` }),
   googleAuthCallback
 );
+
+// Google One Tap
+router.post('/google-one-tap', authRateLimiter, googleOneTap);
 
 export default router;

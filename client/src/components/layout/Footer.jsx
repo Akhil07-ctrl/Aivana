@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { FiInstagram, FiTwitter, FiFacebook, FiYoutube } from 'react-icons/fi';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -15,6 +16,13 @@ export default function Footer() {
       },
     });
   };
+
+  const socialLinks = [
+    { icon: FiInstagram, label: 'Instagram' },
+    { icon: FiTwitter, label: 'Twitter' },
+    { icon: FiFacebook, label: 'Facebook' },
+    { icon: FiYoutube, label: 'Youtube' },
+  ];
 
   return (
     <footer className="bg-ink text-white pt-16 pb-8">
@@ -57,19 +65,21 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-white tracking-wider uppercase text-sm mb-6">Stay in the loop</h3>
-            <p className="text-cream-300/70 text-sm mb-4">Subscribe for exclusive offers and AI fashion tips.</p>
-            <form className="flex" onSubmit={handleComingSoon}>
-              <input
-                type="email"
-                placeholder="Email address"
-                className="bg-white/5 border border-white/10 rounded-l-lg px-4 py-2 text-white text-sm w-full focus:outline-none focus:border-rose-brand focus:bg-white/10 transition"
-                required
-              />
-              <button type="submit" className="bg-rose-brand text-white px-4 py-2 rounded-r-lg font-medium hover:bg-rose-light transition">
-                Join
-              </button>
-            </form>
+            <h3 className="font-semibold text-white tracking-wider uppercase text-sm mb-6">Connect</h3>
+            <p className="text-cream-300/70 text-sm mb-6">Join our community and share your #AivanaStyle.</p>
+            <div className="flex gap-4">
+              {socialLinks.map(social => (
+                <button 
+                  key={social.label} 
+                  onClick={handleComingSoon}
+                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-rose-brand hover:text-white transition-all border border-white/10 group"
+                  title={social.label}
+                >
+                  <social.icon size={18} className="group-hover:scale-110 transition-transform" />
+                  <span className="sr-only">{social.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
         </div>

@@ -30,8 +30,8 @@ export default function AiChatbot() {
 
     try {
       const res = await axiosInstance.post('/ai/chat', { message: userMsg });
-      const aiReply = res.data.data.reply;
-      setMessages(prev => [...prev, { role: 'ai', text: aiReply }]);
+      const { reply, products } = res.data.data;
+      setMessages(prev => [...prev, { role: 'ai', text: reply, products }]);
     } catch (error) {
       setMessages(prev => [...prev, { role: 'ai', text: "Oops, I'm having trouble connecting to my styling database. Please try again later." }]);
     } finally {
@@ -101,6 +101,33 @@ export default function AiChatbot() {
                     }`}>
                     {/* Render basic bold formatting if present */}
                     {msg.text.split('**').map((part, i) => i % 2 === 1 ? <strong key={i} className={msg.role === 'ai' ? 'text-rose-brand' : ''}>{part}</strong> : part)}
+
+                    {/* Suggested Products */}
+                    {msg.products?.length > 0 && (
+                      <div className="mt-4 space-y-3 pt-4 border-t border-cream-200">
+                        <p className="text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-2">Recommended for you:</p>
+                        <div className="grid grid-cols-1 gap-3">
+                          {msg.products.map(p => (
+                            <Link 
+                              key={p._id} 
+                              to={`/products/${p.slug}`}
+                              className="flex items-center gap-3 bg-cream-50 p-2 rounded-xl border border-cream-200 hover:border-rose-brand/30 transition-colors group/card"
+                            >
+                              <div className="w-12 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                                <img src={p.images?.[0]?.url} alt={p.name} className="w-full h-full object-cover group-hover/card:scale-110 transition-transform" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-ink truncate">{p.name}</p>
+                                <p className="text-[10px] text-ink-muted font-bold mt-0.5">₹{p.price.toLocaleString()}</p>
+                              </div>
+                              <div className="text-rose-brand">
+                                <FiStar size={12} className="fill-rose-brand" />
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

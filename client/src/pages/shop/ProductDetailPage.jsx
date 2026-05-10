@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiChevronLeft, FiHeart, FiShare2, FiTruck, FiShield } from 'react-icons/fi';
+import { FiChevronLeft, FiHeart, FiShare2, FiTruck, FiShield, FiStar } from 'react-icons/fi';
 import axiosInstance from '../../api/axiosInstance';
 import PageWrapper from '../../components/layout/PageWrapper';
 import SimilarProducts from '../../components/product/SimilarProducts';
+import ProductReviews from '../../components/product/ProductReviews';
 import ShareModal from '../../components/ui/ShareModal';
 import SizeGuideModal from '../../components/ui/SizeGuideModal';
 import toast from 'react-hot-toast';
@@ -13,6 +14,7 @@ import OptimizedImage from '../../components/ui/OptimizedImage';
 import useCartStore from '../../store/cartStore';
 import useWishlistStore from '../../store/wishlistStore';
 import useAuthStore from '../../store/authStore';
+import { NO_SIZE_SUBCATEGORIES } from '../../constants/categories';
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -41,8 +43,26 @@ export default function ProductDetailPage() {
   const availableSizes = product ? [...new Set(product.variants?.map(v => v.size).filter(Boolean))] : [];
   const availableColors = product ? [...new Set(product.variants?.map(v => v.color).filter(Boolean))] : [];
 
+  // Products like Bags, Watches, Jewelry don't need size selection or size guide
+  const isNoSizeProduct = product ? NO_SIZE_SUBCATEGORIES.some(
+    s => s.toLowerCase() === product.subcategory?.toLowerCase()
+  ) : false;
+  const showSizes = availableSizes.length > 0 && !isNoSizeProduct;
+
+  // Check if a specific size has any stock
+  const isSizeInStock = (size) => {
+    if (!product?.variants) return false;
+    return product.variants.some(v => v.size === size && v.stock > 0);
+  };
+
+  // Check if a specific color has any stock
+  const isColorInStock = (color) => {
+    if (!product?.variants) return false;
+    return product.variants.some(v => v.color === color && v.stock > 0);
+  };
+
   const handleAddToCart = async () => {
-    if (availableSizes.length > 0 && !selectedSize) {
+    if (showSizes && !selectedSize) {
       return toast.error('Please select a size');
     }
     if (availableColors.length > 0 && !selectedColor) {
@@ -120,7 +140,7 @@ export default function ProductDetailPage() {
     return (
       <PageWrapper className="justify-center items-center">
         <h2 className="text-2xl font-bold mb-4">Product not found</h2>
-        <Link to="/shop" className="btn-primary">Back to Shop</Link>
+        <button onClick={() => navigate(-1)} className="btn-primary">Back to Shop</button>
       </PageWrapper>
     );
   }
@@ -134,9 +154,12 @@ export default function ProductDetailPage() {
       <div className="container-main py-8 md:py-12">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-ink-muted mb-8">
-          <Link to="/shop" className="hover:text-rose-brand transition flex items-center gap-1">
+          <button
+            onClick={() => navigate(-1)}
+            className="hover:text-rose-brand transition flex items-center gap-1"
+          >
             <FiChevronLeft /> Back to Shop
-          </Link>
+          </button>
           <span>/</span>
           <Link to={`/shop?category=${product.category}`} className="hover:text-ink">{product.category}</Link>
           <span>/</span>
@@ -147,7 +170,7 @@ export default function ProductDetailPage() {
 
           {/* Left: Image Gallery */}
           <div className="w-full lg:w-1/2 flex flex-col lg:flex-row gap-6">
-            
+
             {/* Desktop Thumbnails (Hidden on Mobile/Tablet) */}
             <div className="hidden lg:flex flex-col gap-4 w-24 flex-shrink-0">
               {images.map((img, idx) => (
@@ -165,11 +188,11 @@ export default function ProductDetailPage() {
             {/* Mobile/Tablet Carousel + Desktop Main Image */}
             <div className="flex-1 relative group">
               {/* Main Display (Desktop) / Slider (Mobile) */}
-              <div 
+              <div
                 className="relative aspect-[3/4] rounded-3xl overflow-hidden bg-cream-100 lg:shadow-2xl shadow-ink/5"
               >
                 {/* Mobile Slider Logic (Native Scroll Snap) */}
-                <div 
+                <div
                   className="lg:hidden flex overflow-x-auto snap-x snap-mandatory h-full no-scrollbar"
                   onScroll={(e) => {
                     const index = Math.round(e.target.scrollLeft / e.target.offsetWidth);
@@ -189,23 +212,37 @@ export default function ProductDetailPage() {
                   ))}
                 </div>
 
-                {/* Desktop Animated Display */}
-                <div className="hidden lg:block h-full w-full">
+                {/* Desktop Animated Display with Hover Zoom */}
+                <div
+                  className="hidden lg:block h-full w-full overflow-hidden cursor-crosshair"
+                  onMouseMove={(e) => {
+                    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+                    const x = ((e.clientX - left) / width) * 100;
+                    const y = ((e.clientY - top) / height) * 100;
+                    e.currentTarget.lastChild.style.transformOrigin = `${x}% ${y}%`;
+                    e.currentTarget.lastChild.style.transform = 'scale(2.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.lastChild.style.transformOrigin = 'center center';
+                    e.currentTarget.lastChild.style.transform = 'scale(1)';
+                  }}
+                >
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={activeImage}
-                      initial={{ opacity: 0, scale: 1.05 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4, ease: "circOut" }}
-                      className="h-full w-full"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="h-full w-full transition-transform duration-200 ease-out"
+                      style={{ transformOrigin: 'center center', transform: 'scale(1)' }}
                     >
                       <OptimizedImage
                         src={images[activeImage].url}
                         alt={product.name}
                         width={800}
                         priority
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover pointer-events-none"
                       />
                     </motion.div>
                   </AnimatePresence>
@@ -214,11 +251,10 @@ export default function ProductDetailPage() {
                 {/* Mobile Pagination Dots */}
                 <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 lg:hidden">
                   {images.map((_, idx) => (
-                    <div 
+                    <div
                       key={idx}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        activeImage === idx ? 'w-8 bg-white shadow-sm' : 'w-1.5 bg-white/40'
-                      }`}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${activeImage === idx ? 'w-8 bg-white shadow-sm' : 'w-1.5 bg-white/40'
+                        }`}
                     />
                   ))}
                 </div>
@@ -232,14 +268,24 @@ export default function ProductDetailPage() {
               {product.name}
             </h1>
 
-            <div className="flex items-center gap-4 mb-6 text-sm">
-              <div className="flex text-yellow-500">
-                {'★'.repeat(Math.round(product.averageRating || 5))}
-                {'☆'.repeat(5 - Math.round(product.averageRating || 5))}
+            <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-1.5 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-100 shadow-sm">
+                <div className="flex text-yellow-500">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <FiStar key={s} className={s <= Math.round(product.averageRating || 0) ? 'fill-yellow-500' : 'text-yellow-200'} size={14} />
+                  ))}
+                </div>
+                <span className="text-sm font-bold text-ink ml-1">{product.averageRating?.toFixed(1) || '0.0'}</span>
               </div>
-              <span className="text-ink-muted underline cursor-pointer hover:text-ink">
-                {product.numOfReviews || 5} Reviews
-              </span>
+              <button
+                onClick={() => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-sm font-bold text-ink-muted hover:text-rose-brand transition-colors flex items-center gap-2 group"
+              >
+                <div className="w-1 h-1 bg-cream-400 rounded-full" />
+                <span className="underline decoration-cream-300 underline-offset-4 group-hover:decoration-rose-brand">
+                  {product.numOfReviews || 0} Customer Reviews
+                </span>
+              </button>
             </div>
 
             <div className="flex items-end gap-4 mb-6">
@@ -259,26 +305,40 @@ export default function ProductDetailPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-ink tracking-wide mb-3">Color: <span className="font-normal text-ink-muted">{selectedColor}</span></h3>
                   <div className="flex gap-3">
-                    {availableColors.map(color => (
-                      <button
-                        key={color}
-                        onClick={() => setSelectedColor(color)}
-                        className={`w-10 h-10 rounded-full border-2 transition-transform capitalize ${selectedColor === color ? 'border-ink scale-110' : 'border-transparent hover:scale-105 shadow-sm'
-                          }`}
-                        title={color}
-                        style={{ backgroundColor: color.toLowerCase() }}
-                      />
-                    ))}
+                    {availableColors.map(color => {
+                      const inStock = isColorInStock(color);
+                      return (
+                        <button
+                          key={color}
+                          onClick={() => inStock && setSelectedColor(color)}
+                          disabled={!inStock}
+                          className={`relative w-10 h-10 rounded-full border-2 transition-transform capitalize ${!inStock
+                              ? 'opacity-30 cursor-not-allowed border-transparent'
+                              : selectedColor === color
+                                ? 'border-ink scale-110'
+                                : 'border-transparent hover:scale-105 shadow-sm'
+                            }`}
+                          title={inStock ? color : `${color} - Out of stock`}
+                          style={{ backgroundColor: color.toLowerCase() }}
+                        >
+                          {!inStock && (
+                            <span className="absolute inset-0 flex items-center justify-center">
+                              <span className="block w-full h-0.5 bg-red-500 rotate-45 rounded-full" />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
               {/* Sizes */}
-              {availableSizes.length > 0 && (
+              {showSizes && (
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-semibold text-ink tracking-wide">Size</h3>
-                    <button 
+                    <button
                       onClick={() => setIsSizeGuideOpen(true)}
                       className="flex items-center gap-1.5 text-xs font-bold text-rose-brand hover:text-rose-dark transition-colors px-3 py-1.5 bg-rose-brand/5 rounded-full border border-rose-brand/10"
                     >
@@ -289,31 +349,64 @@ export default function ProductDetailPage() {
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    {availableSizes.map(size => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`w-12 h-12 flex items-center justify-center border rounded-lg font-medium transition-all ${selectedSize === size
-                          ? 'bg-ink text-white border-ink'
-                          : 'bg-white text-ink border-cream-300 hover:border-ink'
-                          }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                    {availableSizes.map(size => {
+                      const inStock = isSizeInStock(size);
+                      return (
+                        <button
+                          key={size}
+                          onClick={() => inStock && setSelectedSize(size)}
+                          disabled={!inStock}
+                          className={`relative w-12 h-12 flex items-center justify-center border rounded-lg font-medium transition-all overflow-hidden ${!inStock
+                              ? 'bg-cream-50 text-ink-muted/40 border-cream-200 cursor-not-allowed'
+                              : selectedSize === size
+                                ? 'bg-ink text-white border-ink'
+                                : 'bg-white text-ink border-cream-300 hover:border-ink'
+                            }`}
+                        >
+                          {size}
+                          {!inStock && (
+                            <span className="absolute inset-0 flex items-center justify-center">
+                              <span className="block w-[140%] h-px bg-ink-muted/40 rotate-45" />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
             </div>
+
+            {/* Out of Stock Banner */}
+            {product.totalStock <= 0 && (
+              <div className="bg-red-50 border border-red-100 rounded-2xl p-5 mb-6 flex items-center gap-4">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-bold text-red-700 text-sm">Currently Out of Stock</p>
+                  <p className="text-xs text-red-500 mt-0.5">This item is temporarily unavailable. Check back soon!</p>
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 mb-10">
               <button
                 onClick={handleAddToCart}
                 disabled={product.totalStock <= 0 || isAddingToCart}
-                className={`w-full sm:flex-1 btn-primary py-3.5 sm:py-4 text-base sm:text-lg order-1 sm:order-none ${product.totalStock > 0 && !isAddingToCart ? 'animate-pulse-once' : ''} ${isAddingToCart ? 'opacity-70 cursor-wait' : ''}`}
+                className={`w-full sm:flex-1 py-3.5 sm:py-4 text-base sm:text-lg order-1 sm:order-none rounded-xl font-bold transition-all ${product.totalStock <= 0
+                    ? 'bg-cream-200 text-ink-muted cursor-not-allowed'
+                    : isAddingToCart
+                      ? 'btn-primary opacity-70 cursor-wait'
+                      : 'btn-primary'
+                  }`}
               >
-                {isAddingToCart ? 'Adding...' : product.totalStock > 0 ? 'Add to Cart' : 'Sold Out'}
+                {isAddingToCart ? 'Adding...' : product.totalStock > 0 ? 'Add to Cart' : 'Out of Stock'}
               </button>
               <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto order-2 sm:order-none">
                 <button
@@ -356,6 +449,15 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
+        {/* Reviews Section */}
+        <div id="reviews-section">
+          <ProductReviews
+            productId={product._id}
+            averageRating={product.averageRating}
+            numOfReviews={product.numOfReviews}
+          />
+        </div>
+
         {/* Similar Products */}
         <SimilarProducts productId={product._id} category={product.category} />
 
@@ -370,7 +472,7 @@ export default function ProductDetailPage() {
         <SizeGuideModal
           isOpen={isSizeGuideOpen}
           onClose={() => setIsSizeGuideOpen(false)}
-          category={product.category}
+          subcategory={product.subcategory}
         />
       </div>
     </PageWrapper>

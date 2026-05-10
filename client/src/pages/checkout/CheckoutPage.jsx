@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import useCartStore from '../../store/cartStore';
 import axiosInstance from '../../api/axiosInstance';
@@ -16,9 +16,12 @@ export default function CheckoutPage() {
     address: '',
     city: '',
     postalCode: '',
-    country: '',
+    country: 'India',
     phone: '',
   });
+
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [showSavedSelector, setShowSavedSelector] = useState(false);
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -26,6 +29,37 @@ export default function CheckoutPage() {
       navigate('/shop');
     }
   }, [cart, navigate]);
+
+  // Pre-populate address from user profile
+  useEffect(() => {
+    const fetchUserAddress = async () => {
+      try {
+        const res = await axiosInstance.get('/users/profile');
+        const user = res.data.data;
+        if (user && user.addresses && user.addresses.length > 0) {
+          setSavedAddresses(user.addresses);
+          const defaultAddr = user.addresses.find(a => a.isDefault) || user.addresses[0];
+          applySavedAddress(defaultAddr);
+        }
+      } catch (err) {
+        console.error('Failed to load saved addresses:', err);
+      }
+    };
+
+    fetchUserAddress();
+  }, []);
+
+  const applySavedAddress = (addr) => {
+    setShippingAddress({
+      address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
+      city: addr.city,
+      postalCode: addr.pincode,
+      country: 'India',
+      phone: addr.phone || '',
+    });
+    setShowSavedSelector(false);
+    toast.success(`Address updated to: ${addr.label || 'Home'}`);
+  };
 
   const handleInputChange = (e) => {
     setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
@@ -60,7 +94,6 @@ export default function CheckoutPage() {
           size: item.size,
           color: item.color,
           product: item.product._id,
-          vendorId: item.product.vendorId // Removed user fallback
         })),
         shippingAddress,
         itemsPrice: cart.totalPrice,
@@ -143,9 +176,53 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left: Shipping Form */}
           <div className="lg:col-span-7 bg-white p-8 rounded-2xl shadow-sm border border-cream-200 h-fit">
-            <h2 className="text-xl font-bold text-ink mb-6">Shipping Details</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-ink">Shipping Details</h2>
+              {savedAddresses.length > 0 && (
+                <button
+                  onClick={() => setShowSavedSelector(!showSavedSelector)}
+                  className="text-xs font-bold text-rose-brand uppercase tracking-widest hover:underline"
+                >
+                  {showSavedSelector ? 'Back to Form' : 'Use Saved Address'}
+                </button>
+              )}
+            </div>
 
-            <form className="space-y-4">
+            <AnimatePresence mode="wait">
+              {showSavedSelector ? (
+                <motion.div
+                  key="selector"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  className="space-y-4"
+                >
+                  {savedAddresses.map((addr) => (
+                    <button
+                      key={addr._id}
+                      onClick={() => applySavedAddress(addr)}
+                      className="w-full text-left p-4 rounded-xl border border-cream-200 hover:border-rose-brand/30 hover:bg-rose-brand/5 transition-all group"
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="text-xs font-bold bg-cream-100 px-2 py-1 rounded text-ink-muted uppercase tracking-wider mb-2 inline-block">
+                          {addr.label || 'Home'}
+                        </span>
+                        {addr.isDefault && <span className="text-[10px] text-rose-brand font-bold uppercase tracking-tighter">Primary</span>}
+                      </div>
+                      <p className="font-bold text-ink">{addr.fullName}</p>
+                      <p className="text-sm text-ink-muted mt-1">{addr.line1}, {addr.city}</p>
+                      <p className="text-sm text-ink-muted">{addr.pincode}</p>
+                    </button>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.form
+                  key="form"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="space-y-4"
+                >
               <div>
                 <label className="block text-sm font-medium text-ink mb-1">Full Address</label>
                 <input
@@ -186,14 +263,16 @@ export default function CheckoutPage() {
                   />
                 </div>
               </div>
-            </form>
+                </motion.form>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Right: Order Summary */}
           <div className="lg:col-span-5 bg-ink text-white p-8 rounded-2xl shadow-xl h-fit">
             <h2 className="text-xl font-bold mb-6">Order Summary</h2>
 
-            <div className="space-y-4 mb-6 border-b border-white/20 pb-6 max-h-60 overflow-y-auto pr-2">
+            <div className="space-y-4 mb-6 border-b border-white/20 pb-6">
               {cart.items.map((item, idx) => (
                 <div key={idx} className="flex gap-4">
                   <div className="w-16 h-20 bg-cream-100 rounded-md overflow-hidden bg-white/10 flex-shrink-0">

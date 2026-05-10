@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom';
 
 export default function HeroSection() {
   return (
-    <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-cream-50 pt-20">
+    <section className="relative min-h-[90vh] lg:h-screen w-full flex items-center justify-center overflow-hidden bg-cream-50 pt-24 pb-12 lg:py-0">
       {/* Background Graphic elements to make it premium */}
-      <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-rose-brand/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-cream-300/40 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-10%] right-[-5%] w-64 md:w-96 h-64 md:h-96 bg-rose-brand/10 rounded-full blur-[80px] md:blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-64 md:w-96 h-64 md:h-96 bg-cream-300/40 rounded-full blur-[80px] md:blur-[100px] pointer-events-none" />
 
-      <div className="container-main relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="container-main relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
 
         {/* Left: Text Content */}
-        <div className="max-w-2xl">
+        <div className="max-w-2xl text-center lg:text-left">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -34,7 +34,7 @@ export default function HeroSection() {
           </motion.h1>
 
           <motion.p
-            className="text-base sm:text-lg text-ink-muted mb-10 max-w-md leading-relaxed"
+            className="text-base sm:text-lg text-ink-muted mb-10 max-w-md mx-auto lg:mx-0 leading-relaxed"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
@@ -43,7 +43,7 @@ export default function HeroSection() {
           </motion.p>
 
           <motion.div
-            className="flex flex-wrap items-center gap-4"
+            className="flex flex-wrap items-center justify-center lg:justify-start gap-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.7, ease: 'easeOut' }}
@@ -81,7 +81,7 @@ export default function HeroSection() {
         </div>
 
         {/* Right: Images Composition (Now responsive for all devices) */}
-        <div className="relative h-[500px] md:h-[600px] mt-12 lg:mt-0">
+        <div className="relative h-[400px] sm:h-[500px] md:h-[600px] mt-8 lg:mt-0">
           {/* Main Large Image */}
           <motion.div
             className="absolute right-0 top-0 lg:top-[10%] w-[85%] lg:w-[80%] h-[90%] lg:h-[80%] rounded-2xl overflow-hidden shadow-2xl z-10"

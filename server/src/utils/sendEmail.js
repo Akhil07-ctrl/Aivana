@@ -87,18 +87,49 @@ export const generateOrderConfirmationEmail = (order, user) => {
     
     <div style="margin: 30px 0; padding: 25px; border: 1px solid #1a1a1a; border-radius: 4px;">
       <p style="margin: 0 0 15px 0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Order Summary</p>
+      
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <thead>
+          <tr style="border-bottom: 1px solid #f0f0f0;">
+            <th style="text-align: left; padding: 10px 0; font-size: 12px; color: #888; text-transform: uppercase;">Item</th>
+            <th style="text-align: center; padding: 10px 0; font-size: 12px; color: #888; text-transform: uppercase;">Qty</th>
+            <th style="text-align: right; padding: 10px 0; font-size: 12px; color: #888; text-transform: uppercase;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${order.orderItems.map(item => `
+            <tr style="border-bottom: 1px solid #f0f0f0;">
+              <td style="padding: 15px 0;">
+                <div style="font-weight: 600; color: #1a1a1a;">${item.name}</div>
+                <div style="font-size: 11px; color: #888; margin-top: 4px;">
+                  ${item.size ? `Size: ${item.size}` : ''} 
+                  ${item.color ? ` | Color: ${item.color}` : ''}
+                </div>
+              </td>
+              <td style="padding: 15px 0; text-align: center; color: #666;">${item.quantity}</td>
+              <td style="padding: 15px 0; text-align: right; font-weight: 600; color: #1a1a1a;">₹${item.price.toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
       <table style="width: 100%; font-size: 14px;">
         <tr>
           <td style="padding: 5px 0; color: #666;">Order Number:</td>
           <td style="padding: 5px 0; text-align: right; font-weight: 600;">#${orderNumber}</td>
         </tr>
         <tr>
-          <td style="padding: 5px 0; color: #666;">Total Amount:</td>
-          <td style="padding: 5px 0; text-align: right; font-weight: 600;">₹${order.totalPrice.toFixed(2)}</td>
+          <td style="padding: 5px 0; color: #666;">Subtotal:</td>
+          <td style="padding: 5px 0; text-align: right; font-weight: 600;">₹${order.itemsPrice.toFixed(2)}</td>
         </tr>
+        ${order.shippingPrice > 0 ? `
         <tr>
-          <td style="padding: 5px 0; color: #666;">Items:</td>
-          <td style="padding: 5px 0; text-align: right;">${order.orderItems.length} item(s)</td>
+          <td style="padding: 5px 0; color: #666;">Shipping:</td>
+          <td style="padding: 5px 0; text-align: right; font-weight: 600;">₹${order.shippingPrice.toFixed(2)}</td>
+        </tr>` : ''}
+        <tr>
+          <td style="padding: 20px 0 5px 0; border-top: 1px solid #1a1a1a; font-size: 18px; font-weight: 700;">Total Amount:</td>
+          <td style="padding: 20px 0 5px 0; border-top: 1px solid #1a1a1a; text-align: right; font-size: 18px; font-weight: 700;">₹${order.totalPrice.toFixed(2)}</td>
         </tr>
       </table>
     </div>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import productApi from '../../api/productApi';
 import ProductCard from '../../components/product/ProductCard';
+import { FiArrowRight } from 'react-icons/fi';
 import TrendingSlider from './TrendingSlider';
 
 export default function FeaturedProducts() {
@@ -46,14 +47,40 @@ export default function FeaturedProducts() {
   return (
     <section className="py-24 bg-white overflow-hidden">
       <div className="container-main">
-        <div className="flex justify-between items-end mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 text-center md:text-left">
           <div>
-            <h2 className="font-display text-4xl text-ink font-bold mb-3">Trending Now</h2>
-            <p className="text-ink-muted">Curated picks for the current season.</p>
+            <motion.span
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-rose-brand text-[10px] font-bold uppercase tracking-[0.2em] block mb-4"
+            >
+              Trending
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="font-display text-4xl lg:text-5xl text-ink font-bold"
+            >
+              Trending Now
+            </motion.h2>
           </div>
-          <Link to="/shop" className="hidden md:inline-flex text-rose-brand font-semibold hover:underline">
-            View All Products
-          </Link>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="flex justify-center md:justify-end"
+          >
+            <Link
+              to="/shop"
+              className="group flex items-center gap-3 font-bold text-ink hover:text-rose-brand transition-colors border-b-2 border-cream-200 pb-1 hover:border-rose-brand"
+            >
+              View All Products
+              <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
         </div>
 
         {/* Desktop Grid */}

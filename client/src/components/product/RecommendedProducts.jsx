@@ -3,15 +3,19 @@ import axiosInstance from '../../api/axiosInstance';
 import ProductCard from './ProductCard';
 import { FiStar } from 'react-icons/fi';
 
-export default function RecommendedProducts({ categoryContext }) {
+export default function RecommendedProducts({ categoryContext, vibes, context }) {
   const { data: products, isLoading } = useQuery({
-    queryKey: ['ai-recommendations', categoryContext],
+    queryKey: ['ai-recommendations', categoryContext, vibes, context],
     queryFn: async () => {
-      const p = categoryContext ? `?category=${categoryContext}` : '';
-      const res = await axiosInstance.get(`/ai/recommend${p}`);
+      const params = new URLSearchParams();
+      if (categoryContext) params.set('category', categoryContext);
+      if (vibes) params.set('vibes', vibes);
+      if (context) params.set('context', context);
+      
+      const res = await axiosInstance.get(`/ai/recommend?${params.toString()}`);
       return res.data.data;
     },
-    staleTime: 60000 // Cache recommendations for a minute
+    staleTime: 60000 
   });
 
   if (isLoading || !products || products.length === 0) return null;

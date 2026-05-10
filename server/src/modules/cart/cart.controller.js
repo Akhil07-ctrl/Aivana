@@ -37,8 +37,30 @@ export const addToCart = asyncHandler(async (req, res) => {
   // Verify stock for specific variant
   let variantStock = product.totalStock;
   if (size || color) {
-    const variant = product.variants?.find(v => v.size === size && v.color === color);
-    if (!variant) throw new ApiError(400, 'Requested size/color variant not found');
+    const variant = product.variants?.find(v => {
+      const vSize = (v.size || "").trim().toLowerCase();
+      const reqSize = (size || "").trim().toLowerCase();
+      const vColor = (v.color || "").trim().toLowerCase();
+      const reqColor = (color || "").trim().toLowerCase();
+
+      // Flexible matching:
+      // 1. Exact match (after normalization)
+      // 2. If requested size is empty, it can match "one size", "n/a", or empty in DB
+      const sizeMatch = vSize === reqSize || (reqSize === "" && (vSize === "one size" || vSize === "n/a" || vSize === ""));
+      const colorMatch = vColor === reqColor || (reqColor === "" && (vColor === "one size" || vColor === "n/a" || vColor === ""));
+      
+      return sizeMatch && colorMatch;
+    });
+
+    if (!variant) {
+      console.log('Variant search failed:', { 
+        productId, 
+        requestedSize: size, 
+        requestedColor: color, 
+        availableVariants: product.variants 
+      });
+      throw new ApiError(400, 'Requested size/color variant not found');
+    }
     variantStock = variant.stock;
   }
 
@@ -85,9 +107,17 @@ export const updateCartItem = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ user: req.user._id });
   if (!cart) throw new ApiError(404, 'Cart not found');
 
-  const itemIndex = cart.items.findIndex(p =>
-    p.product.toString() === productId && p.size === size && p.color === color
-  );
+  const itemIndex = cart.items.findIndex(p => {
+    const vSize = (p.size || "").trim().toLowerCase();
+    const reqSize = (size || "").trim().toLowerCase();
+    const vColor = (p.color || "").trim().toLowerCase();
+    const reqColor = (color || "").trim().toLowerCase();
+
+    const sizeMatch = vSize === reqSize || (reqSize === "" && (vSize === "one size" || vSize === "n/a" || vSize === ""));
+    const colorMatch = vColor === reqColor || (reqColor === "" && (vColor === "one size" || vColor === "n/a" || vColor === ""));
+    
+    return p.product.toString() === productId && sizeMatch && colorMatch;
+  });
 
   if (itemIndex === -1) throw new ApiError(404, 'Item not found in cart');
 
@@ -137,11 +167,17 @@ export const syncCart = asyncHandler(async (req, res) => {
       const product = await Product.findById(productId);
       if (!product) continue;
 
-      const itemIndex = cart.items.findIndex(p =>
-        p.product.toString() === productId.toString() && 
-        p.size === localItem.size && 
-        p.color === localItem.color
-      );
+      const itemIndex = cart.items.findIndex(p => {
+        const vSize = (p.size || "").trim().toLowerCase();
+        const reqSize = (localItem.size || "").trim().toLowerCase();
+        const vColor = (p.color || "").trim().toLowerCase();
+        const reqColor = (localItem.color || "").trim().toLowerCase();
+
+        const sizeMatch = vSize === reqSize || (reqSize === "" && (vSize === "one size" || vSize === "n/a" || vSize === ""));
+        const colorMatch = vColor === reqColor || (reqColor === "" && (vColor === "one size" || vColor === "n/a" || vColor === ""));
+        
+        return p.product.toString() === productId.toString() && sizeMatch && colorMatch;
+      });
 
       if (itemIndex > -1) {
         // Ensure quantity doesn't exceed stock? For simplicity, we just add it and assume stock is handled at checkout
