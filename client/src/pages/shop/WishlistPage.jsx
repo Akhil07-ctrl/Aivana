@@ -1,17 +1,52 @@
-import { FiHeart } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiHeart, FiSearch, FiArrowRight } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import PageWrapper from '../../components/layout/PageWrapper';
 import useWishlistStore from '../../store/wishlistStore';
 import ProductCard from '../../components/product/ProductCard';
+import axiosInstance from '../../api/axiosInstance';
 
 export default function WishlistPage() {
-  const { items } = useWishlistStore();
+  const { items, setItems } = useWishlistStore();
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Sync wishlist with server on mount
+  useEffect(() => {
+    if (items.length > 0) {
+      const syncWishlist = async () => {
+        setIsSyncing(true);
+        try {
+          const ids = items.map(item => item._id).join(',');
+          const res = await axiosInstance.get('/products', { params: { ids, limit: 100 } });
+          const freshProducts = res.data.data.products || [];
+
+          if (freshProducts.length !== items.length || JSON.stringify(freshProducts) !== JSON.stringify(items)) {
+            setItems(freshProducts);
+          }
+        } catch (error) {
+          console.error('Wishlist sync failed:', error);
+        } finally {
+          setIsSyncing(false);
+        }
+      };
+      syncWishlist();
+    }
+  }, []);
 
   return (
     <PageWrapper className="bg-cream-50 pt-10 pb-24 min-h-screen">
       <div className="container-main max-w-6xl">
-        <h1 className="font-display text-4xl font-bold text-ink mb-2">My Wishlist</h1>
-        <p className="text-ink-muted mb-10">Save your favorite styles for later.</p>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="font-display text-4xl font-bold text-ink">My Wishlist</h1>
+          {isSyncing && (
+            <div className="flex items-center gap-2 text-rose-brand text-xs font-bold uppercase tracking-widest">
+              <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              Syncing
+            </div>
+          )}
+        </div>
+        <p className="text-ink-muted mb-10 text-lg">Your curated collection of premium styles.</p>
 
         {items.length === 0 ? (
           <motion.div

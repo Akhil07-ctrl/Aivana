@@ -33,7 +33,7 @@ export default function Newsletter() {
             viewport={{ once: true }}
           >
             <span className="text-xs font-bold text-rose-brand uppercase tracking-[0.2em]">Stay In The Loop</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-ink mt-3 mb-4">
+            <h2 className="font-display text-4xl md:text-5xl text-ink font-medium tracking-tight mt-3 mb-6">
               Get 10% Off Your First Order
             </h2>
             <p className="text-ink-muted max-w-md mx-auto mb-10 leading-relaxed">

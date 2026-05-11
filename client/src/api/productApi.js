@@ -4,10 +4,10 @@ const productApi = {
   // Get all products with optional filters
   getProducts: (params) => axiosInstance.get('/products', { params }),
 
-  // Get trending/featured products (limit to 4 or custom limit)
+  // Get trending/featured products (explicitly marked as isTrending)
   getTrendingProducts: (limit = 4) => 
-    axiosInstance.get('/products', { 
-      params: { limit, sort: 'createdAt' } 
+    axiosInstance.get('/products/trending', { 
+      params: { limit } 
     }),
 
   // Get product by ID or slug

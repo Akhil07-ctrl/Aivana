@@ -36,7 +36,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
-  const { items: wishlistItems } = useWishlistStore();
+  const { items: wishlistItems, setItems: setWishlistItems } = useWishlistStore();
   const { addToCart } = useCartStore();
   const queryClient = useQueryClient();
   const location = useLocation();
@@ -47,6 +47,7 @@ export default function ProfilePage() {
   const [editData, setEditData] = useState({ name: "", email: "" });
   const [isUploading, setIsUploading] = useState(false);
   const [expandedOrders, setExpandedOrders] = useState({});
+  const [isWishlistSyncing, setIsWishlistSyncing] = useState(false);
   const fileInputRef = useRef(null);
 
   const toggleOrder = (id) => {
@@ -74,6 +75,30 @@ export default function ProfilePage() {
       toast.error("Failed to add some items", { id: toastId });
     }
   };
+
+  // Sync wishlist with server when tab is active
+  useEffect(() => {
+    if (activeTab === 'wishlist' && wishlistItems.length > 0) {
+      const syncWishlist = async () => {
+        setIsWishlistSyncing(true);
+        try {
+          const ids = wishlistItems.map(item => item._id).join(',');
+          const res = await axiosInstance.get('/products', { params: { ids, limit: 100 } });
+          const freshProducts = res.data.data.products || [];
+          
+          // Only update if something changed (count or any price/stock update)
+          if (freshProducts.length !== wishlistItems.length || JSON.stringify(freshProducts) !== JSON.stringify(wishlistItems)) {
+            setWishlistItems(freshProducts);
+          }
+        } catch (error) {
+          console.error('Wishlist sync failed:', error);
+        } finally {
+          setIsWishlistSyncing(false);
+        }
+      };
+      syncWishlist();
+    }
+  }, [activeTab]);
 
   // Address Modal State
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -921,9 +946,14 @@ export default function ProfilePage() {
                         <h2 className="text-2xl font-bold text-ink">
                           My Wishlist
                         </h2>
-                        <p className="text-sm font-bold text-rose-brand bg-rose-50 px-5 py-1.5 rounded-full">
-                          {wishlistItems.length} Favorite Styles
-                        </p>
+                        <div className="flex items-center gap-3">
+                          {isWishlistSyncing && (
+                            <div className="w-4 h-4 border-2 border-rose-brand border-t-transparent rounded-full animate-spin" />
+                          )}
+                          <p className="text-sm font-bold text-rose-brand bg-rose-50 px-5 py-1.5 rounded-full">
+                            {wishlistItems.length} Favorite Styles
+                          </p>
+                        </div>
                       </div>
 
                       {wishlistItems.length === 0 ? (

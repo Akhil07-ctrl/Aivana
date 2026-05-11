@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import AppRouter from './router/AppRouter';
 import useAuthStore from './store/authStore';
@@ -22,6 +22,15 @@ export default function App() {
   const { fetchMe, user, isInitialized } = useAuthStore();
   const { fetchCart } = useCartStore();
   const [showNamePrompt, setShowNamePrompt] = useState(false);
+  const welcomeShown = useRef(false);
+
+  // Show welcome back toast for returning users
+  useEffect(() => {
+    if (isInitialized && user && !welcomeShown.current) {
+      toast.success(`Welcome back, ${user.name.split(' ')[0]}! ✨`);
+      welcomeShown.current = true;
+    }
+  }, [isInitialized, user]);
 
   // Hydrate auth state on app mount
   useEffect(() => {

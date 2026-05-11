@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import PageWrapper from '../../components/layout/PageWrapper';
 import { FiStar, FiShield, FiHeart, FiGlobe } from 'react-icons/fi';
+import ExploringVideo from '../../assets/Exploring_Video.mp4';
 
 const features = [
   {
@@ -29,43 +31,101 @@ export default function AboutPage() {
   return (
     <PageWrapper>
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center overflow-hidden bg-ink">
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-ink">
+        {/* Background Image */}
         <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1441996644326-05531dc3396b?auto=format&fit=crop&q=80&w=2000"
+          <motion.img
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.5, ease: 'easeOut' }}
+            src="https://media.licdn.com/dms/image/v2/D4E12AQE9IJ6FjkRXIg/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1675279743979?e=1779926400&v=beta&t=by1U5kwm_tWXr6GgprcFP8K-Xy84m8Fr6yWrG7vMnf0"
             alt="Fashion Backdrop"
-            className="w-full h-full object-cover opacity-30"
+            className="w-full h-full object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-ink/50 via-transparent to-ink" />
+          <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/30 to-ink" />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/80 via-transparent to-transparent" />
         </div>
 
-        <div className="container-main relative z-10 pt-20">
+        {/* Decorative Elements */}
+        <div className="absolute top-20 right-10 lg:right-20 w-px h-32 bg-gradient-to-b from-transparent via-rose-brand/40 to-transparent z-10" />
+        <div className="absolute top-40 right-16 lg:right-32 w-px h-20 bg-gradient-to-b from-transparent via-white/20 to-transparent z-10" />
+
+        <div className="container-main relative z-10 pt-28 pb-20">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
             className="max-w-3xl"
           >
-            <span className="inline-block px-4 py-1.5 rounded-full bg-rose-brand/20 text-rose-brand text-[10px] font-bold uppercase tracking-[0.2em] mb-6">
-              Our Story
-            </span>
-            <h1 className="font-display text-5xl lg:text-7xl font-bold text-white mb-8 leading-tight">
-              Redefining the <span className="italic text-rose-brand">Art of Dressing</span> in the Digital Age.
-            </h1>
-            <p className="text-cream-300 text-lg lg:text-xl leading-relaxed mb-10 max-w-2xl">
+            {/* Accent Line + Badge */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex items-center gap-4 mb-8"
+            >
+              <div className="w-12 h-px bg-rose-brand" />
+              <span className="text-rose-brand text-[10px] font-bold uppercase tracking-[0.25em]">
+                Our Story
+              </span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.7 }}
+              className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-[1.1]"
+            >
+              Redefining the{' '}
+              <span className="italic text-rose-brand">Art of Dressing</span>{' '}
+              in the Digital Age.
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="text-cream-300/80 text-lg lg:text-xl leading-relaxed mb-12 max-w-2xl"
+            >
               Aivana was born from a simple belief: that fashion should be as unique as the individual. We blend premium craftsmanship with intelligent technology to create a shopping experience that feels personal, effortless, and inspiring.
-            </p>
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="flex items-center gap-6"
+            >
+              <a href="/shop" className="btn-primary px-8 py-4 text-sm">
+                Explore Collection
+              </a>
+              <button
+                onClick={() => toast('Coming soon! ✨', { style: { borderRadius: '12px', background: '#1A1A2E', color: '#F1F1F1', fontSize: '14px' } })}
+                className="text-sm font-semibold text-white/60 hover:text-rose-brand transition-colors flex items-center gap-2 group cursor-pointer"
+              >
+                Learn More
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </button>
+            </motion.div>
           </motion.div>
         </div>
-        
+
         {/* Scroll Indicator */}
-        <motion.div 
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-            className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
         >
-            <div className="w-px h-12 bg-gradient-to-b from-rose-brand to-transparent" />
+          <span className="text-[9px] font-bold text-white/30 uppercase tracking-[0.3em]">Scroll</span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+            className="w-px h-10 bg-gradient-to-b from-rose-brand/60 to-transparent"
+          />
         </motion.div>
       </section>
+
 
       {/* Mission Section */}
       <section className="py-24 lg:py-40 bg-white">
@@ -79,7 +139,7 @@ export default function AboutPage() {
             >
               <div className="aspect-[4/5] rounded-[2rem] overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&q=80&w=1000"
+                  src="https://images.business.com/app/uploads/2022/03/23032729/shopper_Prostock-Studio_getty-3.jpg"
                   alt="Craftsmanship"
                   className="w-full h-full object-cover"
                 />
@@ -93,7 +153,7 @@ export default function AboutPage() {
               viewport={{ once: true }}
             >
               <h2 className="font-display text-4xl lg:text-5xl font-bold text-ink mb-8 leading-tight">
-                Where Tradition Meets <br/>
+                Where Tradition Meets <br />
                 <span className="text-rose-brand">Innovation.</span>
               </h2>
               <div className="space-y-6 text-ink-muted text-lg leading-relaxed">
@@ -155,12 +215,19 @@ export default function AboutPage() {
 
       {/* Final CTA */}
       <section className="py-24 lg:py-40 bg-ink relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <svg patternUnits="userSpaceOnUse" width="100" height="100" className="absolute inset-0 w-full h-full text-white">
-            <circle cx="50" cy="50" r="1" fill="currentColor" />
-          </svg>
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover opacity-30"
+          >
+            <source src={ExploringVideo} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/40" />
         </div>
-        
+
         <div className="container-main relative z-10 text-center">
           <motion.h2
             initial={{ opacity: 0, scale: 0.9 }}
@@ -168,7 +235,7 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="font-display text-4xl lg:text-6xl font-bold text-white mb-10"
           >
-            Ready to Find Your <br/>
+            Ready to Find Your <br />
             <span className="text-rose-brand">Signature Fit?</span>
           </motion.h2>
           <motion.div

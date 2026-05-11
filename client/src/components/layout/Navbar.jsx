@@ -260,8 +260,6 @@ export default function Navbar() {
     { name: 'Addresses', path: '/profile', hash: '#addresses', icon: <FiMapPin size={16} /> },
   ];
 
-
-
   return (
     <>
       <header

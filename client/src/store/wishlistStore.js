@@ -21,6 +21,7 @@ const useWishlistStore = create(
       isInWishlist: (productId) => {
         return !!get().items.find(item => item._id === productId);
       },
+      setItems: (items) => set({ items }),
       clearWishlist: () => set({ items: [] })
     }),
     {

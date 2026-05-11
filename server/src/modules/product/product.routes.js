@@ -2,6 +2,7 @@ import express from 'express';
 import {
   createProduct,
   getProducts,
+  getTrendingProducts,
   getProductByIdOrSlug,
   updateProduct,
   deleteProduct
@@ -12,6 +13,7 @@ import upload from '../../middleware/upload.middleware.js';
 const router = express.Router();
 
 // Public routes
+router.get('/trending', getTrendingProducts);
 router.get('/', getProducts);
 router.get('/:identifier', getProductByIdOrSlug);
 

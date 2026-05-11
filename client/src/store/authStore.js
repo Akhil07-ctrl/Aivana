@@ -14,12 +14,13 @@ const useAuthStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       const res = await authApi.login(credentials);
-      set({ user: res.data.data });
+      const userData = res.data.data;
+      set({ user: userData });
       
       // Sync guest cart to server
       await useCartStore.getState().syncCartWithServer();
 
-      toast.success('Welcome back! 👋');
+      toast.success(`Welcome back, ${userData.name.split(' ')[0]}! ✨`);
       return res.data;
     } catch (error) {
       const msg = error.response?.data?.message || 'Login failed';
@@ -54,14 +55,15 @@ const useAuthStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       const res = await authApi.firebaseLogin({ idToken });
-      set({ user: res.data.data });
+      const userData = res.data.data;
+      set({ user: userData });
 
       await useCartStore.getState().syncCartWithServer();
 
-      if (res.data.data.isNewUser) {
-        toast.success('Account created! Welcome to Aivana! 🎉');
+      if (userData.isNewUser) {
+        toast.success(`Welcome to Aivana, ${userData.name.split(' ')[0]}! 🎉`);
       } else {
-        toast.success('Welcome back! 👋');
+        toast.success(`Welcome back, ${userData.name.split(' ')[0]}! ✨`);
       }
       return res.data;
     } catch (error) {

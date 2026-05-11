@@ -7,12 +7,13 @@ Aivana is a state-of-the-art, minimalist fashion e-commerce platform built with 
 ## ✨ Key Features
 
 - **🔍 Universal AI Search**: Intelligent, real-time debounced product suggestions with a centralized, responsive search architecture.
-- **🤖 AI Stylist**: Get personalized style recommendations powered by the Groq Llama 3 model directly from the interactive floating widget.
+- **🎬 Cinematic Storytelling**: Immersive About page and Home page experiences featuring parallax backgrounds and high-end scroll-driven video reveal sections.
+- **📈 Handpicked Trending Collections**: Dedicated backend-driven trending system allowing explicit control over home page featured items via specialized API endpoints.
+- **🛡️ Data Resilience & Sync**: Self-healing cart and wishlist engines that automatically synchronize with live database states, filtering out stale or deleted products.
+- **🤖 AI Stylist**: Personalized style recommendations powered by the Groq Llama 3 model directly from the interactive floating widget.
+- **👋 Personalized Experience**: Dynamic, name-based authentication flows with session recognition and welcoming UI toasts.
 - **💎 Premium Dynamic Design**: Minimalist UI built with Playfair Display & Inter fonts. Features fluid typography, interactive hover states, and smooth staggered data-loading transitions powered by Framer Motion.
-- **📱 Touch-First Responsiveness**: Flawless layout scaling across all devices, ensuring perfect touch targets, fluid product grids, and zero layout shift on mobile and tablet displays.
-- **⚡ Streamlined API Architecture**: Role-free backend secured via `x-api-key`, designed for rapid headless integration and seamless management via external clients like Postman.
-- **💳 Secure Payments**: Integrated Razorpay checkout with secure HMAC signature verification.
-- **📦 Order Tracking**: Visual shipment tracking and real-time updates via Socket.io.
+- **📱 Touch-First Responsiveness**: Flawless layout scaling across all devices, ensuring perfect touch targets and fluid product grids on mobile and tablet displays.
 
 ## 🚀 Technology Stack
 

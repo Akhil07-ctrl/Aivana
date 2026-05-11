@@ -53,9 +53,14 @@ export const createProduct = asyncHandler(async (req, res) => {
 // @route   GET /api/products
 // @access  Public
 export const getProducts = asyncHandler(async (req, res) => {
-  const { category, subcategory, search, sort, page = 1, limit = 12, minPrice, maxPrice } = req.query;
+  const { ids, category, subcategory, search, sort, page = 1, limit = 12, minPrice, maxPrice } = req.query;
 
   let query = { status: 'active' };
+
+  if (ids) {
+    const idArray = ids.split(',').filter(id => id.match(/^[0-9a-fA-F]{24}$/));
+    query._id = { $in: idArray };
+  }
 
   if (category) {
     if (category === 'Sale') {
@@ -67,7 +72,12 @@ export const getProducts = asyncHandler(async (req, res) => {
   }
 
   if (subcategory) {
-    query.subcategory = { $regex: `^${subcategory}$`, $options: 'i' };
+    if (subcategory === 'Sale') {
+      query.msrp = { $exists: true, $gt: 0 };
+      query.$expr = { $gt: ["$msrp", "$price"] };
+    } else {
+      query.subcategory = { $regex: `^${subcategory}$`, $options: 'i' };
+    }
   }
   if (search) {
     query.$or = [
@@ -156,4 +166,19 @@ export const deleteProduct = asyncHandler(async (req, res) => {
   await product.save();
 
   res.json(new ApiResponse(200, null, 'Product archived successfully'));
+});
+
+// @desc    Get trending products
+// @route   GET /api/products/trending
+// @access  Public
+export const getTrendingProducts = asyncHandler(async (req, res) => {
+  console.log('Fetching trending products...');
+  const limit = parseInt(req.query.limit) || 8;
+  
+  const products = await Product.find({ isTrending: true, status: 'active' })
+    .select('name slug price msrp images category totalStock averageRating numOfReviews status')
+    .limit(limit)
+    .sort({ updatedAt: -1 });
+
+  res.json(new ApiResponse(200, products, 'Trending products fetched successfully'));
 });

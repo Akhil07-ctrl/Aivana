@@ -118,68 +118,9 @@ export default function HeroSection() {
             />
           </motion.div>
 
-          {/* Futuristic AI Intelligence Tags */}
-          {/* 
-          <div className="absolute inset-0 z-30 pointer-events-none">
-            // Tag 1: Style Type
-            <motion.div
-              className="absolute top-[20%] left-[10%] lg:left-[-5%] bg-white/80 backdrop-blur-md border border-white/40 px-4 py-2 rounded-full shadow-lg"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ 
-                opacity: 1, 
-                x: 0,
-                y: [0, -10, 0] 
-              }}
-              transition={{ 
-                delay: 1.2,
-                y: { duration: 3, repeat: Infinity, ease: "easeInOut" }
-              }}
-            >
-              <span className="text-[10px] font-bold text-rose-brand uppercase tracking-widest block">AI Curated</span>
-              <span className="text-sm font-bold text-ink">Premium Silk</span>
-            </motion.div>
-
-            // Tag 2: Style Fit
-            <motion.div
-              className="absolute bottom-[30%] right-[5%] lg:right-[-5%] bg-ink/90 backdrop-blur-md text-white px-4 py-2 rounded-full shadow-2xl"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ 
-                opacity: 1, 
-                x: 0,
-                y: [0, 15, 0] 
-              }}
-              transition={{ 
-                delay: 1.4,
-                y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-rose-brand rounded-full animate-pulse" />
-                <span className="text-sm font-medium">Perfect Fit Guarantee</span>
-              </div>
-            </motion.div>
-
-            // Tag 3: Season
-            <motion.div
-              className="absolute top-[50%] right-[10%] lg:right-[15%] bg-white/40 backdrop-blur-sm border border-white/20 p-3 rounded-2xl shadow-xl"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                rotate: [0, 5, 0] 
-              }}
-              transition={{ 
-                delay: 1.6,
-                rotate: { duration: 5, repeat: Infinity, ease: "easeInOut" }
-              }}
-            >
-              <div className="text-[10px] font-bold text-ink uppercase opacity-60 mb-1">Season</div>
-              <div className="text-xs font-bold text-ink tracking-tighter">SUMMER '26</div>
-            </motion.div>
-          </div>
-          */}
 
           {/* Decorative AI scanning lines */}
+
           <motion.div
             className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-rose-brand/40 to-transparent z-40"
             animate={{ top: ['10%', '90%', '10%'] }}

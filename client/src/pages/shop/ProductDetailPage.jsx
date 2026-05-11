@@ -153,16 +153,16 @@ export default function ProductDetailPage() {
     <PageWrapper>
       <div className="container-main py-8 md:py-12">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-ink-muted mb-8">
+        <nav className="flex items-center gap-2 text-xs sm:text-sm text-ink-muted mb-6 md:mb-8 overflow-x-auto no-scrollbar whitespace-nowrap">
           <button
             onClick={() => navigate(-1)}
-            className="hover:text-rose-brand transition flex items-center gap-1"
+            className="hover:text-rose-brand transition flex items-center gap-1 flex-shrink-0"
           >
-            <FiChevronLeft /> Back to Shop
+            <FiChevronLeft /> Back
           </button>
-          <span>/</span>
-          <Link to={`/shop?category=${product.category}`} className="hover:text-ink">{product.category}</Link>
-          <span>/</span>
+          <span className="opacity-40">/</span>
+          <Link to={`/shop?category=${product.category}`} className="hover:text-ink flex-shrink-0">{product.category}</Link>
+          <span className="opacity-40">/</span>
           <span className="text-ink font-medium">{product.name}</span>
         </nav>
 
@@ -313,10 +313,10 @@ export default function ProductDetailPage() {
                           onClick={() => inStock && setSelectedColor(color)}
                           disabled={!inStock}
                           className={`relative w-10 h-10 rounded-full border-2 transition-transform capitalize ${!inStock
-                              ? 'opacity-30 cursor-not-allowed border-transparent'
-                              : selectedColor === color
-                                ? 'border-ink scale-110'
-                                : 'border-transparent hover:scale-105 shadow-sm'
+                            ? 'opacity-30 cursor-not-allowed border-transparent'
+                            : selectedColor === color
+                              ? 'border-ink scale-110'
+                              : 'border-transparent hover:scale-105 shadow-sm'
                             }`}
                           title={inStock ? color : `${color} - Out of stock`}
                           style={{ backgroundColor: color.toLowerCase() }}
@@ -357,10 +357,10 @@ export default function ProductDetailPage() {
                           onClick={() => inStock && setSelectedSize(size)}
                           disabled={!inStock}
                           className={`relative w-12 h-12 flex items-center justify-center border rounded-lg font-medium transition-all overflow-hidden ${!inStock
-                              ? 'bg-cream-50 text-ink-muted/40 border-cream-200 cursor-not-allowed'
-                              : selectedSize === size
-                                ? 'bg-ink text-white border-ink'
-                                : 'bg-white text-ink border-cream-300 hover:border-ink'
+                            ? 'bg-cream-50 text-ink-muted/40 border-cream-200 cursor-not-allowed'
+                            : selectedSize === size
+                              ? 'bg-ink text-white border-ink'
+                              : 'bg-white text-ink border-cream-300 hover:border-ink'
                             }`}
                         >
                           {size}
@@ -400,10 +400,10 @@ export default function ProductDetailPage() {
                 onClick={handleAddToCart}
                 disabled={product.totalStock <= 0 || isAddingToCart}
                 className={`w-full sm:flex-1 py-3.5 sm:py-4 text-base sm:text-lg order-1 sm:order-none rounded-xl font-bold transition-all ${product.totalStock <= 0
-                    ? 'bg-cream-200 text-ink-muted cursor-not-allowed'
-                    : isAddingToCart
-                      ? 'btn-primary opacity-70 cursor-wait'
-                      : 'btn-primary'
+                  ? 'bg-cream-200 text-ink-muted cursor-not-allowed'
+                  : isAddingToCart
+                    ? 'btn-primary opacity-70 cursor-wait'
+                    : 'btn-primary'
                   }`}
               >
                 {isAddingToCart ? 'Adding...' : product.totalStock > 0 ? 'Add to Cart' : 'Out of Stock'}

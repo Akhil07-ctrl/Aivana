@@ -18,7 +18,7 @@ export default function LoadingScreen() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="flex flex-col items-center"
+          className="relative flex flex-col items-center"
         >
           <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tighter text-ink mb-2">
             AIVANA
@@ -46,7 +46,7 @@ export default function LoadingScreen() {
         <motion.p
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="mt-4 text-[10px] text-ink-muted/60 font-medium tracking-widest uppercase"
+          className="relative mt-4 text-[10px] text-ink-muted/60 font-medium tracking-widest uppercase"
         >
           Curating Your Experience
         </motion.p>

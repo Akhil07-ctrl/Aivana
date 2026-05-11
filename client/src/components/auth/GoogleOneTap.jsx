@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import useAuthStore from '../../store/authStore';
+import useCartStore from '../../store/cartStore';
 import axiosInstance from '../../api/axiosInstance';
 import toast from 'react-hot-toast';
 

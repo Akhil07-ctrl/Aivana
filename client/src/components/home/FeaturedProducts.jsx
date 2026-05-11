@@ -10,8 +10,8 @@ export default function FeaturedProducts() {
   const { data: products = [], isLoading, isError } = useQuery({
     queryKey: ['trending-products'],
     queryFn: async () => {
-      const response = await productApi.getTrendingProducts(4);
-      return response.data.data.products || [];
+      const response = await productApi.getTrendingProducts(8);
+      return response.data.data || [];
     },
     staleTime: 1000 * 60 * 10, // 10 minutes — homepage data changes rarely
   });

@@ -8,11 +8,19 @@ import Product from '../product/product.model.js';
 // @route   GET /api/cart
 // @access  Private
 export const getMyCart = asyncHandler(async (req, res) => {
-  let cart = await Cart.findOne({ user: req.user._id }).populate('items.product', 'name images slug');
+  let cart = await Cart.findOne({ user: req.user._id }).populate('items.product', 'name images slug price');
 
-  // If no cart exists, return empty cart instead of 404 so UI can handle it smoothly
   if (!cart) {
     cart = await Cart.create({ user: req.user._id, items: [] });
+  } else {
+    // CLEANUP: Filter out items whose product was deleted from DB (null after populate)
+    const originalCount = cart.items.length;
+    cart.items = cart.items.filter(item => item.product !== null);
+    
+    // If we removed something, save the cleaned cart
+    if (cart.items.length !== originalCount) {
+      await cart.save();
+    }
   }
 
   res.json(new ApiResponse(200, cart, 'Cart fetched'));
@@ -53,12 +61,6 @@ export const addToCart = asyncHandler(async (req, res) => {
     });
 
     if (!variant) {
-      console.log('Variant search failed:', { 
-        productId, 
-        requestedSize: size, 
-        requestedColor: color, 
-        availableVariants: product.variants 
-      });
       throw new ApiError(400, 'Requested size/color variant not found');
     }
     variantStock = variant.stock;
