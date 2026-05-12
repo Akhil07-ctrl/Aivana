@@ -22,6 +22,7 @@ import cartRoutes from './src/modules/cart/cart.routes.js';
 import reviewRoutes from './src/modules/review/review.routes.js';
 import deliveryRoutes from './src/modules/delivery/delivery.routes.js';
 import aiRoutes from './src/modules/ai/ai.routes.js';
+import supportRoutes from './src/modules/support/support.routes.js';
 
 // Middleware
 import { errorHandler } from './src/middleware/errorHandler.js';
@@ -87,6 +88,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/support', supportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'OK', app: 'Aivana API' }));

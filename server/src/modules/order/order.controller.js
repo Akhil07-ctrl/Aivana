@@ -5,6 +5,7 @@ import ApiError from '../../utils/ApiError.js';
 import ApiResponse from '../../utils/ApiResponse.js';
 import Order from './order.model.js';
 import Product from '../product/product.model.js';
+import User from '../user/user.model.js';
 import { sendEmail, generateOrderConfirmationEmail, generateOrderDeliveredEmail } from '../../utils/sendEmail.js';
 
 // Setup Razorpay instance (using env vars, defaulting to test keys if empty)
@@ -23,16 +24,21 @@ export const createOrder = asyncHandler(async (req, res) => {
     itemsPrice,
     taxPrice,
     shippingPrice,
+    platformFee,
     totalPrice,
+    saveAddress,
   } = req.body;
 
   if (orderItems && orderItems.length === 0) {
     throw new ApiError(400, 'No order items');
   }
 
+  // Strip saveAddress flag — not part of order schema
+  const { saveAddress: _save, ...cleanShippingAddress } = shippingAddress || {};
+
   // Generate Razorpay Order
   const options = {
-    amount: Math.round(totalPrice * 100), // Razorpay amount is in paise (smallest currency unit)
+    amount: Math.round(totalPrice * 100),
     currency: 'INR',
     receipt: `receipt_order_${Date.now()}`,
   };
@@ -46,10 +52,11 @@ export const createOrder = asyncHandler(async (req, res) => {
   const order = new Order({
     user: req.user._id,
     orderItems,
-    shippingAddress,
+    shippingAddress: cleanShippingAddress,
     itemsPrice,
     taxPrice,
     shippingPrice,
+    platformFee: platformFee || 9,
     totalPrice,
     paymentMethod: 'Razorpay',
     paymentResult: {
@@ -59,6 +66,41 @@ export const createOrder = asyncHandler(async (req, res) => {
   });
 
   const createdOrder = await order.save();
+
+  // Save address to user profile if requested
+  if (saveAddress && cleanShippingAddress.line1) {
+    try {
+      const user = await User.findById(req.user._id);
+      if (user) {
+        // Mark all existing addresses as non-default
+        user.addresses.forEach(a => { a.isDefault = false; });
+
+        // Check if an identical address already exists
+        const existing = user.addresses.find(
+          a => a.line1 === cleanShippingAddress.line1 && a.pincode === cleanShippingAddress.pincode
+        );
+
+        if (existing) {
+          existing.isDefault = true;
+        } else {
+          user.addresses.push({
+            label: 'Home',
+            fullName: cleanShippingAddress.fullName,
+            phone: cleanShippingAddress.phone,
+            line1: cleanShippingAddress.line1,
+            line2: cleanShippingAddress.line2 || '',
+            city: cleanShippingAddress.city,
+            state: cleanShippingAddress.state,
+            pincode: cleanShippingAddress.pincode,
+            isDefault: true,
+          });
+        }
+        await user.save();
+      }
+    } catch (e) {
+      console.error('[ADDRESS SAVE ERROR]', e);
+    }
+  }
 
   res.status(201).json(new ApiResponse(201, {
     orderId: createdOrder._id,

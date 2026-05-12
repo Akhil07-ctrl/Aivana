@@ -13,11 +13,14 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState(false);
   const [shippingAddress, setShippingAddress] = useState({
-    address: '',
-    city: '',
-    postalCode: '',
-    country: 'India',
+    fullName: '',
     phone: '',
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    pincode: '',
+    saveAddress: true,
   });
 
   const [savedAddresses, setSavedAddresses] = useState([]);
@@ -51,11 +54,14 @@ export default function CheckoutPage() {
 
   const applySavedAddress = (addr) => {
     setShippingAddress({
-      address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
-      city: addr.city,
-      postalCode: addr.pincode,
-      country: 'India',
+      fullName: addr.fullName || '',
       phone: addr.phone || '',
+      line1: addr.line1 || '',
+      line2: addr.line2 || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      pincode: addr.pincode || '',
+      saveAddress: false,
     });
     setShowSavedSelector(false);
     toast.success(`Address updated to: ${addr.label || 'Home'}`);
@@ -77,14 +83,16 @@ export default function CheckoutPage() {
 
   const handlePayment = async (e) => {
     e.preventDefault();
-    if (!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode) {
-      return toast.error('Please fill in all shipping fields');
+    if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.line1 || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode) {
+      return toast.error('Please fill in all required shipping fields');
     }
 
     setLoading(true);
 
     try {
-      // 1. Create order on backend (returns razorpayOrderId)
+      // Separate saveAddress flag from actual address fields
+      const { saveAddress, ...cleanAddress } = shippingAddress;
+
       const orderPayload = {
         orderItems: cart.items.map(item => ({
           name: item.product.name,
@@ -95,11 +103,13 @@ export default function CheckoutPage() {
           color: item.color,
           product: item.product._id,
         })),
-        shippingAddress,
+        shippingAddress: cleanAddress,
+        saveAddress,
         itemsPrice: cart.totalPrice,
-        taxPrice: cart.totalPrice * 0.18, // 18% GST example
-        shippingPrice: cart.totalPrice > 500 ? 0 : 50, // Free shipping over 500
-        totalPrice: cart.totalPrice + (cart.totalPrice * 0.18) + (cart.totalPrice > 500 ? 0 : 50),
+        taxPrice: 0,
+        shippingPrice: cart.totalPrice > 500 ? 0 : 50,
+        platformFee: 9,
+        totalPrice: cart.totalPrice + (cart.totalPrice > 500 ? 0 : 50) + 9,
       };
 
       const orderRes = await axiosInstance.post('/orders', orderPayload);
@@ -134,7 +144,7 @@ export default function CheckoutPage() {
 
             toast.success('Payment successful! 🎉', { id: 'verify' });
             clearCart();
-            navigate('/orders'); // Redirect to order history
+            navigate('/profile#orders'); // Redirect to integrated order history
           } catch (err) {
             toast.error('Payment verification failed', { id: 'verify' });
           }
@@ -164,9 +174,9 @@ export default function CheckoutPage() {
 
   if (!cart) return null;
 
-  const taxPrice = cart.totalPrice * 0.18;
   const shippingPrice = cart.totalPrice > 500 ? 0 : 50;
-  const finalTotal = cart.totalPrice + taxPrice + shippingPrice;
+  const platformFee = 9;
+  const finalTotal = cart.totalPrice + shippingPrice + platformFee;
 
   return (
     <PageWrapper className="bg-cream-50 pt-10 pb-24">
@@ -223,35 +233,11 @@ export default function CheckoutPage() {
                   exit={{ opacity: 0, x: -10 }}
                   className="space-y-4"
                 >
-              <div>
-                <label className="block text-sm font-medium text-ink mb-1">Full Address</label>
-                <input
-                  type="text" name="address" value={shippingAddress.address} onChange={handleInputChange}
-                  className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition"
-                  placeholder="Street address, apartment, suite" required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">City</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Full Name</label>
                   <input
-                    type="text" name="city" value={shippingAddress.city} onChange={handleInputChange}
-                    className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition" required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-ink mb-1">Postal Code</label>
-                  <input
-                    type="text" name="postalCode" value={shippingAddress.postalCode} onChange={handleInputChange}
-                    className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition" required
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-ink mb-1">Country</label>
-                  <input
-                    type="text" name="country" value={shippingAddress.country} onChange={handleInputChange}
+                    type="text" name="fullName" value={shippingAddress.fullName} onChange={handleInputChange}
                     className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition" required
                   />
                 </div>
@@ -262,6 +248,49 @@ export default function CheckoutPage() {
                     className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition" required
                   />
                 </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-ink mb-1">Address Line 1</label>
+                  <input
+                    type="text" name="line1" value={shippingAddress.line1} onChange={handleInputChange}
+                    className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition" required
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-ink mb-1">Address Line 2 (Optional)</label>
+                  <input
+                    type="text" name="line2" value={shippingAddress.line2} onChange={handleInputChange}
+                    className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-ink mb-1">City</label>
+                  <input
+                    type="text" name="city" value={shippingAddress.city} onChange={handleInputChange}
+                    className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition" required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-ink mb-1">State</label>
+                  <input
+                    type="text" name="state" value={shippingAddress.state} onChange={handleInputChange}
+                    className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition" required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-ink mb-1">Pincode</label>
+                  <input
+                    type="text" name="pincode" value={shippingAddress.pincode} onChange={handleInputChange}
+                    className="w-full bg-cream-50 border border-cream-300 rounded-lg p-3 text-ink focus:border-rose-brand outline-none transition" required
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="checkbox" name="saveAddress" id="saveAddress" checked={shippingAddress.saveAddress}
+                  onChange={(e) => setShippingAddress({ ...shippingAddress, saveAddress: e.target.checked })}
+                  className="w-4 h-4 text-rose-brand rounded border-cream-300 focus:ring-rose-brand"
+                />
+                <label htmlFor="saveAddress" className="text-sm font-medium text-ink cursor-pointer">Save this address as default in my profile</label>
               </div>
                 </motion.form>
               )}
@@ -299,12 +328,12 @@ export default function CheckoutPage() {
                 <span>₹{cart.totalPrice?.toLocaleString('en-IN') || 'N/A'}</span>
               </div>
               <div className="flex justify-between text-cream-300">
-                <span>Estimated Tax (18%)</span>
-                <span>₹{taxPrice?.toLocaleString('en-IN') || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between text-cream-300">
                 <span>Shipping</span>
                 <span>{shippingPrice === 0 ? 'Free' : `₹${shippingPrice?.toLocaleString('en-IN')}`}</span>
+              </div>
+              <div className="flex justify-between text-cream-300">
+                <span>Platform Fee</span>
+                <span>₹{platformFee?.toLocaleString('en-IN')}</span>
               </div>
             </div>
 

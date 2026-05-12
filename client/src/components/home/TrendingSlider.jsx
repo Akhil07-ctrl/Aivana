@@ -13,14 +13,14 @@ export default function TrendingSlider({ products }) {
     : products;
 
   return (
-    <div className="lg:hidden py-8 -mx-4 px-4 overflow-visible">
+    <div className="lg:hidden py-8 -mx-4 px-4 overflow-hidden">
       <Swiper
         slidesPerView={1.3}
         centeredSlides={true}
         spaceBetween={20}
         grabCursor={true}
         loop={true}
-        className="trending-swiper !overflow-visible"
+        className="trending-swiper"
         breakpoints={{
           // Tablet view
           640: {

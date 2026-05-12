@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiShoppingBag, FiUser, FiSearch, FiMenu, FiX, FiHeart, FiPackage, FiMapPin, FiLogOut, FiChevronDown } from 'react-icons/fi';
+import { FiShoppingBag, FiUser, FiSearch, FiMenu, FiX, FiHeart, FiPackage, FiMapPin, FiLogOut, FiChevronDown, FiDownload } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useAuthStore from '../../store/authStore';
 import useCartStore from '../../store/cartStore';
@@ -17,7 +17,7 @@ const searchPlaceholders = [
   "Look for 'Premium Denim'..."
 ];
 
-const DynamicPlaceholder = ({ placeholderIndex }) => (
+const DynamicPlaceholder = ({ placeholderIndex, isDarkHeader }) => (
   <AnimatePresence mode="wait">
     <motion.p
       key={placeholderIndex}
@@ -25,7 +25,7 @@ const DynamicPlaceholder = ({ placeholderIndex }) => (
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: -20, opacity: 0 }}
       transition={{ duration: 0.5, ease: "circOut" }}
-      className="text-sm text-ink-muted italic whitespace-nowrap"
+      className={`text-sm italic whitespace-nowrap ${isDarkHeader ? 'text-white/80' : 'text-ink-muted'}`}
     >
       {searchPlaceholders[placeholderIndex]}
     </motion.p>
@@ -166,7 +166,6 @@ export default function Navbar() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const { isInstallable, handleInstallClick } = usePWAInstall();
 
-
   useEffect(() => {
     const interval = setInterval(() => {
       setPlaceholderIndex((prev) => (prev + 1) % searchPlaceholders.length);
@@ -260,11 +259,17 @@ export default function Navbar() {
     { name: 'Addresses', path: '/profile', hash: '#addresses', icon: <FiMapPin size={16} /> },
   ];
 
+  const darkHeaderRoutes = ['/'];
+  const isDarkHeader = darkHeaderRoutes.includes(location.pathname) && !isScrolled;
+
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5'
-          }`}
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
+          isScrolled || location.pathname === '/faq' || location.pathname === '/contact'
+            ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' 
+            : 'bg-transparent py-5'
+        } ${isDarkHeader ? 'text-white' : 'text-ink'}`}
       >
         <div className="container-main flex items-center justify-between gap-2 sm:gap-4">
           <AnimatePresence>
@@ -291,7 +296,7 @@ export default function Navbar() {
                       </div>
                       {!searchQuery && (
                         <div className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden h-5 w-full">
-                          <DynamicPlaceholder placeholderIndex={placeholderIndex} />
+                          <DynamicPlaceholder placeholderIndex={placeholderIndex} isDarkHeader={false} />
                         </div>
                       )}
                     </div>
@@ -333,14 +338,14 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <div className="flex items-center gap-2">
             <button
-              className="lg:hidden text-ink hover:text-rose-brand transition p-2"
+              className={`xl:hidden p-2 transition-all duration-300 ${isDarkHeader ? 'text-white' : 'text-ink'} hover:opacity-70`}
               onClick={() => setMobileMenuOpen(true)}
             >
               <FiMenu size={24} />
             </button>
 
             {/* Logo */}
-            <Link to="/" className="font-display font-bold text-2xl tracking-wide text-ink relative z-50 hover:text-rose-brand transition-colors">
+            <Link to="/" className={`font-display font-bold text-2xl tracking-wide relative z-50 transition-all duration-300 ${isDarkHeader ? 'text-white' : 'text-ink'} hover:opacity-80`}>
               Aivana
             </Link>
           </div>
@@ -351,7 +356,7 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 to={link.path}
-                className="text-sm font-semibold text-ink-light hover:text-rose-brand transition-colors relative group"
+                className={`text-sm font-bold transition-colors relative group ${isDarkHeader ? 'text-white hover:text-white' : 'text-ink-light hover:text-rose-brand'}`}
               >
                 {link.name}
                 {location.pathname === link.path && (
@@ -368,18 +373,24 @@ export default function Navbar() {
                 type="text"
                 value={searchQuery}
                 onFocus={() => setActiveSearchSource('desktop')}
-                onBlur={() => setTimeout(() => setActiveSearchSource(null), 200)} // Delay to allow clicks
+                onBlur={() => setTimeout(() => setActiveSearchSource(null), 200)}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-cream-100/50 border border-transparent focus:bg-white focus:border-rose-brand/30 focus:ring-4 focus:ring-rose-brand/5 rounded-full py-2 pl-10 pr-4 text-sm transition-all duration-300 placeholder-transparent group-hover:bg-cream-100"
+                className={`w-full rounded-full py-2 pl-10 pr-4 text-sm transition-all duration-300 ${
+                  isDarkHeader 
+                    ? 'bg-white/20 text-white placeholder-white/80 border border-white/40 focus:bg-white/30 focus:border-white/60 group-hover:bg-white/25 shadow-inner' 
+                    : 'bg-cream-100/50 border border-transparent focus:bg-white focus:border-rose-brand/30 focus:ring-4 focus:ring-rose-brand/5 placeholder-transparent group-hover:bg-cream-100'
+                }`}
               />
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted group-focus-within:text-rose-brand transition-colors">
+              <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${
+                isDarkHeader ? 'text-white group-focus-within:text-white' : 'text-ink-muted group-focus-within:text-rose-brand'
+              }`}>
                 <FiSearch size={16} />
               </div>
 
               {/* Dynamic Placeholder Layer */}
               {!searchQuery && (
                 <div className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden h-5 w-full">
-                  <DynamicPlaceholder placeholderIndex={placeholderIndex} />
+                  <DynamicPlaceholder placeholderIndex={placeholderIndex} isDarkHeader={isDarkHeader} />
                 </div>
               )}
               {/* Desktop Suggestions */}
@@ -402,13 +413,17 @@ export default function Navbar() {
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 relative z-50">
             <button
               onClick={() => setIsMobileSearchOpen(true)}
-              className="md:hidden p-2 text-ink-light hover:text-rose-brand transition hover:bg-cream-100 rounded-full"
+              className={`xl:hidden p-2 transition-all duration-300 rounded-full ${
+                isDarkHeader ? 'text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
+              }`}
             >
               <FiSearch size={20} />
             </button>
 
             {user && (
-              <Link to="/wishlist" className="p-2 text-ink-light hover:text-rose-brand transition relative hover:bg-cream-100 rounded-full hidden sm:block">
+              <Link to="/wishlist" className={`p-2 transition relative rounded-full hidden sm:block ${
+                isDarkHeader ? 'text-white hover:text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
+              }`}>
                 <FiHeart size={20} />
                 {wishlistCount > 0 && (
                   <span className="absolute top-1 right-1 bg-rose-brand text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white">
@@ -420,7 +435,9 @@ export default function Navbar() {
 
             <button
               onClick={() => setCartOpen(true)}
-              className="p-2 text-ink-light hover:text-rose-brand transition relative cursor-pointer hover:bg-cream-100 rounded-full"
+              className={`p-2 transition relative cursor-pointer rounded-full ${
+                isDarkHeader ? 'text-white hover:text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
+              }`}
             >
               <FiShoppingBag size={20} />
               {cartItemsCount > 0 && (
@@ -430,19 +447,41 @@ export default function Navbar() {
               )}
             </button>
 
+            {/* Desktop Install App Button */}
+            {isInstallable && (
+              <button
+                onClick={handleInstallClick}
+                className={`hidden lg:flex items-center gap-2 px-3 py-2 transition-all duration-300 rounded-full text-sm font-bold border ${
+                  isDarkHeader
+                    ? 'border-white/40 text-white hover:bg-white/20'
+                    : 'border-rose-brand/30 text-rose-brand hover:bg-rose-50 hover:border-rose-brand/50'
+                }`}
+                title="Install Aivana App"
+              >
+                <FiDownload size={16} />
+                <span>Install</span>
+              </button>
+            )}
+
             {/* User Dropdown / Sign In */}
             <div className="relative" ref={userMenuRef}>
               {user ? (
                 <div className="flex items-center gap-1 lg:gap-2">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className={`flex items-center gap-2 pl-2 pr-1 py-1 rounded-full border transition-all duration-200 ${userMenuOpen ? 'bg-ink border-ink text-white' : 'bg-white border-cream-300 text-ink hover:border-rose-brand'}`}
+                    className={`flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-full border transition-all duration-200 ${
+                      userMenuOpen 
+                        ? 'bg-ink border-ink text-white' 
+                        : isDarkHeader
+                          ? 'bg-white/20 border-white/40 text-white hover:bg-white/30'
+                          : 'bg-white border-cream-300 text-ink hover:border-rose-brand hover:shadow-sm'
+                    }`}
                   >
-                    <div className="w-7 h-7 rounded-full bg-cream-200 overflow-hidden flex items-center justify-center ring-1 ring-black/5">
+                    <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center ring-1 ring-black/5 shrink-0 ${isDarkHeader && !userMenuOpen ? 'bg-white/20' : 'bg-cream-100'}`}>
                       {user.avatar?.url ? (
-                        <img src={user.avatar.url} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        <img src={user.avatar.url} alt="Avatar" className="w-full h-full object-cover object-center" referrerPolicy="no-referrer" />
                       ) : (
-                        <FiUser size={14} className={userMenuOpen ? "text-white/80" : "text-ink-muted"} />
+                        <FiUser size={16} className={userMenuOpen || isDarkHeader ? "text-white/90" : "text-ink-muted"} />
                       )}
                     </div>
                     <span className="hidden lg:block text-sm font-semibold pr-1">My Account</span>
@@ -455,7 +494,7 @@ export default function Navbar() {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-cream-200 overflow-hidden py-2"
+                        className="absolute right-0 sm:right-0 -right-4 mt-2 w-48 sm:w-56 bg-white rounded-2xl shadow-2xl border border-cream-200 overflow-hidden py-2 origin-top-right"
                         style={{ top: '100%' }}
                       >
                         <div className="px-4 py-3 border-b border-cream-100 mb-2">
@@ -492,7 +531,11 @@ export default function Navbar() {
                   </AnimatePresence>
                 </div>
               ) : (
-                <Link to="/login" className="flex items-center justify-center p-2 text-ink-light hover:text-rose-brand transition hover:bg-cream-100 rounded-full lg:bg-ink lg:text-white lg:px-6 lg:py-2.5 lg:rounded-full lg:shadow-lg lg:shadow-ink/10 lg:hover:bg-rose-brand lg:hover:text-white lg:font-bold lg:text-sm">
+                <Link to="/login" className={`flex items-center justify-center p-2 transition rounded-full lg:font-bold lg:text-sm ${
+                  isDarkHeader 
+                    ? 'text-white hover:text-white hover:bg-white/20 lg:bg-white/20 lg:text-white lg:px-6 lg:py-2.5 lg:hover:bg-white/30' 
+                    : 'text-ink-light hover:text-rose-brand hover:bg-cream-100 lg:bg-ink lg:text-white lg:px-6 lg:py-2.5 lg:shadow-lg lg:hover:bg-rose-brand'
+                }`}>
                   <FiUser size={20} className="lg:hidden" />
                   <span className="hidden lg:block">Sign in</span>
                 </Link>
@@ -509,7 +552,7 @@ export default function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm xl:hidden"
             onClick={() => setMobileMenuOpen(false)}
           >
             <motion.div
@@ -543,8 +586,8 @@ export default function Navbar() {
               <div className="mt-auto p-6 border-t border-cream-200 bg-cream-50/30">
                 <div className="flex flex-col gap-4">
                   <p className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em] mb-1 px-2">Need Help?</p>
-                  <button onClick={handleComingSoon} className="text-left text-sm font-semibold text-ink-light px-2 hover:text-rose-brand transition-colors">Contact Support</button>
-                  <button onClick={handleComingSoon} className="text-left text-sm font-semibold text-ink-light px-2 hover:text-rose-brand transition-colors">FAQs</button>
+                  <Link to="/contact" className="text-left text-sm font-semibold text-ink-light px-2 hover:text-rose-brand transition-colors">Contact Us</Link>
+                  <Link to="/faq" className="text-left text-sm font-semibold text-ink-light px-2 hover:text-rose-brand transition-colors">FAQs</Link>
                 </div>
 
                 {isInstallable && (

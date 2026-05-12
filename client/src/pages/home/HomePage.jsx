@@ -12,7 +12,7 @@ import EleganceSection from '../../components/home/EleganceSection';
 export default function HomePage() {
   return (
     <PageWrapper>
-      <main className="flex-1">
+      <main className="flex-1 overflow-x-clip">
         <HeroSection />
         <FeaturedProducts />
         <CategoryGrid />

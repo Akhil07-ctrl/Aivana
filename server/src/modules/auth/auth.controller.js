@@ -365,6 +365,12 @@ export const googleOneTap = asyncHandler(async (req, res) => {
         avatar: { url: picture || "", publicId: "" },
         isVerified: true,
       });
+
+      sendEmail({
+        to: user.email,
+        subject: "Welcome to Aivana! 🎉",
+        template: generateWelcomeEmail(user),
+      }).catch((e) => console.error("[AUTH EMAIL ERROR]", e));
     }
 
     const token = generateAccessToken(user._id, user.role);

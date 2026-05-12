@@ -21,6 +21,7 @@ export default function ShopPage() {
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
+  const isTrending = searchParams.get('isTrending') || '';
 
   // Scroll to top when page or filters change
   useEffect(() => {
@@ -52,8 +53,8 @@ export default function ShopPage() {
   };
 
   // Fetch products from backend
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['products', currentCategory, currentSubcategory, currentSearch, currentSort, currentPage, minPrice, maxPrice],
+  const { data, isLoading, isFetching, isError } = useQuery({
+    queryKey: ['products', currentCategory, currentSubcategory, currentSearch, currentSort, currentPage, minPrice, maxPrice, isTrending],
     queryFn: async () => {
       const res = await axiosInstance.get('/products', {
         params: {
@@ -64,13 +65,17 @@ export default function ShopPage() {
           page: currentPage,
           limit: 12,
           minPrice: minPrice || undefined,
-          maxPrice: maxPrice || undefined
+          maxPrice: maxPrice || undefined,
+          isTrending: isTrending || undefined
         }
       });
       return res.data;
     },
     keepPreviousData: true,
+    staleTime: 0,
   });
+
+  const isLoadingAny = isLoading || (isFetching && !data);
 
   const products = data?.data?.products || [];
   const totalPages = data?.data?.totalPages || 1;
@@ -85,7 +90,13 @@ export default function ShopPage() {
             animate={{ opacity: 1, y: 0 }}
             className="font-display text-4xl lg:text-5xl font-bold text-ink mb-4"
           >
-            {currentSearch ? `Results for "${currentSearch}"` : currentCategory ? `${currentCategory} Collection` : 'All Products'}
+            {currentSearch
+              ? `Results for "${currentSearch}"`
+              : isTrending === 'true'
+                ? 'Trending Collection'
+                : currentCategory
+                  ? `${currentCategory} Collection`
+                  : 'All Products'}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -128,7 +139,11 @@ export default function ShopPage() {
           {/* Mobile filter toggle */}
           <div className="flex justify-between items-center mb-6 lg:hidden">
             <span className="text-sm font-semibold text-ink-muted">
-              {data?.data?.totalProducts || 0} products found
+              {isLoadingAny ? (
+                <span className="inline-block w-32 h-4 bg-cream-200 rounded animate-pulse" />
+              ) : (
+                `${data?.data?.totalProducts || 0} products found`
+              )}
             </span>
             <button
               onClick={() => setMobileFiltersOpen(true)}
@@ -139,11 +154,15 @@ export default function ShopPage() {
           </div>
 
           <div className="hidden lg:block mb-8 text-sm font-medium text-ink-muted border-b border-cream-200 pb-4">
-            Showing {products.length} of {data?.data?.totalProducts || 0} products
+            {isLoadingAny ? (
+              <span className="inline-block w-48 h-4 bg-cream-200 rounded animate-pulse" />
+            ) : (
+              `Showing ${products.length} of ${data?.data?.totalProducts || 0} products`
+            )}
           </div>
 
           {/* Grid */}
-          {isLoading ? (
+          {isLoadingAny ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => (
                 <div key={i} className="animate-pulse flex flex-col gap-4">

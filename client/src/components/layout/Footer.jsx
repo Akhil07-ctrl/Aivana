@@ -41,11 +41,17 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-white tracking-wider uppercase text-sm mb-6">Shop</h3>
             <ul className="space-y-3">
-              {['New Arrivals', 'Best Sellers', 'Dresses', 'Accessories', 'Sale'].map(link => (
-                <li key={link}>
-                  <button onClick={handleComingSoon} className="text-cream-300/70 hover:text-rose-brand transition text-sm block text-left">
-                    {link}
-                  </button>
+              {[
+                { label: 'New Arrivals', path: '/shop?sort=newest' },
+                { label: 'Men', path: '/shop?category=Men' },
+                { label: 'Women', path: '/shop?category=Women' },
+                { label: 'Trending', path: '/shop?isTrending=true' },
+                { label: 'Sale', path: '/shop?category=Sale' }
+              ].map(link => (
+                <li key={link.label}>
+                  <Link to={link.path} className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -54,13 +60,28 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-white tracking-wider uppercase text-sm mb-6">Help</h3>
             <ul className="space-y-3">
-              {['Track Order', 'Returns & Exchanges', 'Shipping Info', 'FAQ', 'Contact Us'].map(link => (
+              <li key="Track Order">
+                <Link to="/profile#orders" className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
+                  Track Order
+                </Link>
+              </li>
+              {['Returns & Exchanges', 'Shipping Info'].map(link => (
                 <li key={link}>
                   <button onClick={handleComingSoon} className="text-cream-300/70 hover:text-rose-brand transition text-sm block text-left">
                     {link}
                   </button>
                 </li>
               ))}
+              <li key="FAQ">
+                <Link to="/faq" className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
+                  FAQ
+                </Link>
+              </li>
+              <li key="Contact Us">
+                <Link to="/contact" className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
+                  Contact Us
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -69,8 +90,8 @@ export default function Footer() {
             <p className="text-cream-300/70 text-sm mb-6">Join our community and share your #AivanaStyle.</p>
             <div className="flex gap-4">
               {socialLinks.map(social => (
-                <button 
-                  key={social.label} 
+                <button
+                  key={social.label}
                   onClick={handleComingSoon}
                   className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-rose-brand hover:text-white transition-all border border-white/10 group"
                   title={social.label}

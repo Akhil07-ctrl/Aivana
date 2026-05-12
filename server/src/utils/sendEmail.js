@@ -246,3 +246,35 @@ export const generateRefundEmail = (order, amount, user) => {
   `);
 };
 
+
+export const generateContactEmail = (contactData) => {
+  return emailLayout(`
+    <p style="font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; margin-bottom: 20px;">New Inquiry Received</p>
+    
+    <div style="margin: 20px 0; padding: 25px; background-color: #fcfcfc; border: 1px solid #f0f0f0; border-radius: 4px;">
+      <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 0; color: #888; width: 100px;">Name:</td>
+          <td style="padding: 8px 0; font-weight: 600; color: #1a1a1a;">${contactData.name}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #888;">Email:</td>
+          <td style="padding: 8px 0; font-weight: 600; color: #1a1a1a;">${contactData.email}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #888;">Subject:</td>
+          <td style="padding: 8px 0; font-weight: 600; color: #1a1a1a;">${contactData.subject || 'No Subject'}</td>
+        </tr>
+      </table>
+      
+      <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #f0f0f0;">
+        <p style="margin: 0 0 10px 0; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Message:</p>
+        <p style="margin: 0; line-height: 1.8; color: #1a1a1a; white-space: pre-wrap;">${contactData.message}</p>
+      </div>
+    </div>
+    
+    <p style="font-size: 13px; color: #666; margin-top: 30px;">
+      This inquiry was submitted via the Aivana Contact Form. Please respond to the user directly at <strong>${contactData.email}</strong>.
+    </p>
+  `);
+};

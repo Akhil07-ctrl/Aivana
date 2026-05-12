@@ -6,10 +6,16 @@ const pageVariants = {
   exit: { opacity: 0, scale: 0.98 },
 };
 
-export default function PageWrapper({ children, className = '' }) {
+export default function PageWrapper({ children, className = '', noY = false }) {
+  const customVariants = {
+    ...pageVariants,
+    initial: { ...pageVariants.initial, y: noY ? 0 : 15 },
+    animate: { ...pageVariants.animate, y: 0 },
+  };
+
   return (
     <motion.div
-      variants={pageVariants}
+      variants={customVariants}
       initial="initial"
       animate="animate"
       exit="exit"

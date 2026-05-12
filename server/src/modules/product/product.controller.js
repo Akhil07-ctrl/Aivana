@@ -53,9 +53,13 @@ export const createProduct = asyncHandler(async (req, res) => {
 // @route   GET /api/products
 // @access  Public
 export const getProducts = asyncHandler(async (req, res) => {
-  const { ids, category, subcategory, search, sort, page = 1, limit = 12, minPrice, maxPrice } = req.query;
-
+  const { ids, category, subcategory, search, sort, page = 1, limit = 12, minPrice, maxPrice, isTrending } = req.query;
+  
   let query = { status: 'active' };
+
+  if (isTrending === 'true') {
+    query.isTrending = true;
+  }
 
   if (ids) {
     const idArray = ids.split(',').filter(id => id.match(/^[0-9a-fA-F]{24}$/));

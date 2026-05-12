@@ -1,12 +1,27 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import discoverVideo from '../../assets/Discover_Video.mp4';
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-[90vh] lg:h-screen w-full flex items-center justify-center overflow-hidden bg-cream-50 pt-24 pb-12 lg:py-0">
+    <section className="relative min-h-[90vh] lg:h-screen w-full flex items-center justify-center overflow-hidden bg-transparent pt-24 pb-12 lg:py-0">
+      {/* Fixed Parallax Background Video */}
+      <div className="fixed inset-0 w-full h-screen z-[-1]">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover lg:object-[50%_30%] opacity-50 brightness-75"
+        >
+          <source src={discoverVideo} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/50 to-ink" />
+      </div>
+
       {/* Background Graphic elements to make it premium */}
-      <div className="absolute top-[-10%] right-[-5%] w-64 md:w-96 h-64 md:h-96 bg-rose-brand/10 rounded-full blur-[80px] md:blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-5%] w-64 md:w-96 h-64 md:h-96 bg-cream-300/40 rounded-full blur-[80px] md:blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-10%] right-0 w-64 md:w-96 h-64 md:h-96 bg-rose-brand/10 rounded-full blur-[80px] md:blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-0 w-64 md:w-96 h-64 md:h-96 bg-cream-300/40 rounded-full blur-[80px] md:blur-[100px] pointer-events-none" />
 
       <div className="container-main relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
 
@@ -23,7 +38,7 @@ export default function HeroSection() {
           </motion.div>
 
           <motion.h1
-            className="font-display text-4xl sm:text-5xl md:text-7xl font-bold text-ink leading-[1.1] tracking-tight mb-6"
+            className="font-display text-4xl sm:text-5xl md:text-7xl font-bold text-white leading-[1.1] tracking-tight mb-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
@@ -34,7 +49,7 @@ export default function HeroSection() {
           </motion.h1>
 
           <motion.p
-            className="text-base sm:text-lg text-ink-muted mb-10 max-w-md mx-auto lg:mx-0 leading-relaxed"
+            className="text-base sm:text-lg text-white/90 mb-10 max-w-md mx-auto lg:mx-0 leading-relaxed"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
@@ -43,17 +58,17 @@ export default function HeroSection() {
           </motion.p>
 
           <motion.div
-            className="flex flex-wrap items-center justify-center lg:justify-start gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.7, ease: 'easeOut' }}
           >
-            <Link to="/shop" className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4">
+            <Link to="/shop" className="w-full sm:w-auto btn-primary text-base sm:text-lg px-8 py-4 text-center">
               Shop the Collection
             </Link>
             <Link
               to="/categories"
-              className="group flex items-center gap-2 font-semibold text-base sm:text-lg text-ink-light hover:text-rose-brand transition-all duration-300 py-3 sm:py-4 px-2"
+              className="group flex items-center gap-2 font-semibold text-base sm:text-lg text-white hover:text-rose-brand transition-all duration-300 py-4 px-2"
             >
               Explore Categories
               <motion.span
@@ -82,7 +97,6 @@ export default function HeroSection() {
 
         {/* Right: Images Composition (Now responsive for all devices) */}
         <div className="relative h-[400px] sm:h-[500px] md:h-[600px] mt-8 lg:mt-0">
-          {/* Main Large Image */}
           <motion.div
             className="absolute right-0 top-0 lg:top-[10%] w-[85%] lg:w-[80%] h-[90%] lg:h-[80%] rounded-2xl overflow-hidden shadow-2xl z-10"
             initial={{ opacity: 0, scale: 0.95, x: 40 }}
@@ -105,7 +119,7 @@ export default function HeroSection() {
 
           {/* Secondary Smaller Image */}
           <motion.div
-            className="absolute left-0 bottom-[5%] lg:left-[5%] lg:bottom-[15%] w-[50%] lg:w-[45%] h-[45%] lg:h-[40%] rounded-2xl overflow-hidden shadow-card-hover border-4 border-white z-20"
+            className="absolute left-0 bottom-[5%] lg:left-[5%] lg:bottom-[15%] w-[50%] lg:w-[45%] h-[45%] lg:h-[40%] rounded-2xl overflow-hidden shadow-card-hover border-4 border-white/10 z-20"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}

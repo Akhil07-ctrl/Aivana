@@ -309,8 +309,8 @@ export default function ProfilePage() {
   ];
 
   return (
-    <PageWrapper className="bg-cream-100/50 pt-10 pb-24 min-h-screen">
-      <div className="container-main max-w-6xl">
+    <PageWrapper className="bg-cream-100/50 pt-10 pb-24 min-h-screen w-full">
+      <div className="container-main max-w-6xl w-full">
         <div className="mb-10 text-center lg:text-left">
           <h1 className="text-4xl lg:text-5xl font-display text-ink font-bold mb-2">
             My Account
@@ -320,10 +320,10 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
           {/* Sidebar */}
           <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-28">
-            <div className="bg-white rounded-[2rem] p-4 lg:p-6 shadow-xl shadow-cream-200 border border-cream-100 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible no-scrollbar">
+            <div className="bg-white rounded-[2rem] p-4 lg:p-6 shadow-xl shadow-cream-200 border border-cream-100 grid grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-col gap-2 lg:gap-2">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -331,10 +331,10 @@ export default function ProfilePage() {
                     setActiveTab(tab.id);
                     window.location.hash = tab.id;
                   }}
-                  className={`relative flex items-center justify-center lg:justify-start gap-3 px-4 lg:px-6 py-3.5 lg:py-4 rounded-2xl font-bold transition-all flex-1 lg:flex-none whitespace-nowrap ${
+                  className={`relative flex flex-col md:flex-row items-center justify-center lg:justify-start gap-2 md:gap-3 px-2 py-3 lg:px-6 lg:py-4 rounded-2xl font-bold transition-all text-xs md:text-sm lg:text-base text-center md:text-left ${
                     activeTab === tab.id
                       ? "text-white"
-                      : "text-ink-muted hover:text-ink"
+                      : "text-ink-muted hover:text-ink hover:bg-cream-50"
                   }`}
                 >
                   {activeTab === tab.id && (
@@ -357,15 +357,15 @@ export default function ProfilePage() {
                 </button>
               ))}
 
-              <div className="hidden lg:block mt-8 pt-6 border-t border-cream-100">
+              <div className="col-span-full mt-2 pt-4 lg:mt-8 lg:pt-6 border-t border-cream-100">
                 <button
                   onClick={() => {
                     useAuthStore.getState().logout();
                     navigate("/login");
                   }}
-                  className="w-full flex items-center gap-3 px-5 py-4 text-red-500 font-bold hover:bg-red-50 rounded-2xl transition-all hover:pl-7"
+                  className="w-full flex items-center justify-center lg:justify-start gap-2 md:gap-3 px-5 py-3 lg:py-4 text-red-500 font-bold hover:bg-red-50 rounded-2xl transition-all hover:scale-[1.02] lg:hover:pl-7 lg:hover:scale-100 text-xs md:text-sm lg:text-base"
                 >
-                  <FiTrash2 size={18} />
+                  <FiTrash2 size={16} className="lg:w-[18px] lg:h-[18px]" />
                   Log Out
                 </button>
               </div>
@@ -688,10 +688,11 @@ export default function ProfilePage() {
                                             Destination
                                           </p>
                                           <p className="text-xs font-bold text-ink leading-relaxed">
-                                            {order.shippingAddress.address},{" "}
-                                            {order.shippingAddress.city}
+                                            {order.shippingAddress.fullName}<br />
+                                            {order.shippingAddress.line1}
+                                            {order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ""}
                                             <br />
-                                            {order.shippingAddress.postalCode}
+                                            {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
                                           </p>
                                         </div>
                                         <div className="p-6">
@@ -1007,24 +1008,27 @@ export default function ProfilePage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-2xl bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
-              <div className="p-8 md:p-12 overflow-y-auto custom-scrollbar">
-                <div className="flex justify-between items-center mb-10">
-                  <h3 className="text-3xl font-display font-bold text-ink">
-                    {editingAddress ? "Update Address" : "New Destination"}
-                  </h3>
+              <div className="p-6 sm:p-8 md:p-12 overflow-y-auto custom-scrollbar">
+                <div className="flex justify-between items-center mb-8 sm:mb-10">
+                  <div className="space-y-1">
+                    <h3 className="text-2xl sm:text-3xl font-display font-bold text-ink">
+                      {editingAddress ? "Update Address" : "New Destination"}
+                    </h3>
+                    <p className="text-[10px] font-bold text-rose-brand uppercase tracking-[0.2em]">Delivery Details</p>
+                  </div>
                   <button
                     onClick={() => setIsAddressModalOpen(false)}
-                    className="p-3 text-ink-muted hover:text-rose-brand transition-all hover:bg-cream-50 rounded-full bg-cream-50/30"
+                    className="p-2 sm:p-3 text-ink-muted hover:text-rose-brand transition-all hover:bg-cream-50 rounded-full bg-cream-50/30"
                   >
-                    <FiX size={28} />
+                    <FiX size={24} />
                   </button>
                 </div>
 
-                <form onSubmit={handleAddressSubmit} className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-3">
+                <form onSubmit={handleAddressSubmit} className="space-y-6 sm:space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+                    <div className="space-y-2 sm:space-y-3">
                       <label className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em] ml-1">
                         Full Name
                       </label>
@@ -1037,16 +1041,17 @@ export default function ProfilePage() {
                             fullName: e.target.value,
                           })
                         }
-                        className="input h-14 bg-cream-50/50 border-cream-100 focus:bg-white transition-all"
+                        className="w-full px-5 py-3.5 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl border border-cream-100 bg-cream-50/50 focus:bg-white focus:border-rose-brand focus:ring-4 focus:ring-rose-brand/5 transition-all text-sm font-semibold outline-none"
                         placeholder="e.g. Rahul Sharma"
                       />
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       <label className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em] ml-1">
                         Phone Number
                       </label>
                       <input
                         required
+                        type="tel"
                         value={addressFormData.phone}
                         onChange={(e) =>
                           setAddressFormData({
@@ -1054,11 +1059,11 @@ export default function ProfilePage() {
                             phone: e.target.value,
                           })
                         }
-                        className="input h-14 bg-cream-50/50 border-cream-100 focus:bg-white transition-all"
+                        className="w-full px-5 py-3.5 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl border border-cream-100 bg-cream-50/50 focus:bg-white focus:border-rose-brand focus:ring-4 focus:ring-rose-brand/5 transition-all text-sm font-semibold outline-none"
                         placeholder="10-digit number"
                       />
                     </div>
-                    <div className="md:col-span-2 space-y-3">
+                    <div className="md:col-span-2 space-y-2 sm:space-y-3">
                       <label className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em] ml-1">
                         Address Line 1
                       </label>
@@ -1071,11 +1076,11 @@ export default function ProfilePage() {
                             line1: e.target.value,
                           })
                         }
-                        className="input h-14 bg-cream-50/50 border-cream-100 focus:bg-white transition-all"
+                        className="w-full px-5 py-3.5 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl border border-cream-100 bg-cream-50/50 focus:bg-white focus:border-rose-brand focus:ring-4 focus:ring-rose-brand/5 transition-all text-sm font-semibold outline-none"
                         placeholder="House / Flat No, Street, Landmark"
                       />
                     </div>
-                    <div className="md:col-span-2 space-y-3">
+                    <div className="md:col-span-2 space-y-2 sm:space-y-3">
                       <label className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em] ml-1">
                         Address Line 2 (Optional)
                       </label>
@@ -1087,11 +1092,11 @@ export default function ProfilePage() {
                             line2: e.target.value,
                           })
                         }
-                        className="input h-14 bg-cream-50/50 border-cream-100 focus:bg-white transition-all"
+                        className="w-full px-5 py-3.5 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl border border-cream-100 bg-cream-50/50 focus:bg-white focus:border-rose-brand focus:ring-4 focus:ring-rose-brand/5 transition-all text-sm font-semibold outline-none"
                         placeholder="Apartment, Locality, etc."
                       />
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       <label className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em] ml-1">
                         City
                       </label>
@@ -1104,11 +1109,11 @@ export default function ProfilePage() {
                             city: e.target.value,
                           })
                         }
-                        className="input h-14 bg-cream-50/50 border-cream-100 focus:bg-white transition-all"
+                        className="w-full px-5 py-3.5 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl border border-cream-100 bg-cream-50/50 focus:bg-white focus:border-rose-brand focus:ring-4 focus:ring-rose-brand/5 transition-all text-sm font-semibold outline-none"
                         placeholder="City"
                       />
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       <label className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em] ml-1">
                         State
                       </label>
@@ -1121,11 +1126,11 @@ export default function ProfilePage() {
                             state: e.target.value,
                           })
                         }
-                        className="input h-14 bg-cream-50/50 border-cream-100 focus:bg-white transition-all"
+                        className="w-full px-5 py-3.5 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl border border-cream-100 bg-cream-50/50 focus:bg-white focus:border-rose-brand focus:ring-4 focus:ring-rose-brand/5 transition-all text-sm font-semibold outline-none"
                         placeholder="State"
                       />
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       <label className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em] ml-1">
                         Pincode
                       </label>
@@ -1138,15 +1143,15 @@ export default function ProfilePage() {
                             pincode: e.target.value,
                           })
                         }
-                        className="input h-14 bg-cream-50/50 border-cream-100 focus:bg-white transition-all"
+                        className="w-full px-5 py-3.5 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl border border-cream-100 bg-cream-50/50 focus:bg-white focus:border-rose-brand focus:ring-4 focus:ring-rose-brand/5 transition-all text-sm font-semibold outline-none"
                         placeholder="6-digit PIN"
                       />
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       <label className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em] ml-1">
                         Address Label
                       </label>
-                      <div className="flex gap-4">
+                      <div className="flex gap-3 sm:gap-4">
                         {["Home", "Office"].map((label) => (
                           <button
                             key={label}
@@ -1154,10 +1159,10 @@ export default function ProfilePage() {
                             onClick={() =>
                               setAddressFormData({ ...addressFormData, label })
                             }
-                            className={`flex-1 h-14 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${
+                            className={`flex-1 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-[10px] sm:text-xs uppercase tracking-widest transition-all ${
                               addressFormData.label === label
                                 ? "bg-ink text-white shadow-xl shadow-ink/20"
-                                : "bg-cream-50 text-ink-muted hover:bg-cream-100"
+                                : "bg-cream-50 text-ink-muted hover:bg-cream-100 border border-cream-100"
                             }`}
                           >
                             {label}
@@ -1167,7 +1172,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 py-4 px-6 bg-cream-50/50 rounded-[1.5rem] border border-cream-100/50">
+                  <div className="flex items-center gap-4 py-4 px-5 sm:px-6 bg-cream-50/50 rounded-xl sm:rounded-[1.5rem] border border-cream-100/50">
                     <div className="relative flex items-center">
                       <input
                         type="checkbox"
@@ -1179,39 +1184,39 @@ export default function ProfilePage() {
                             isDefault: e.target.checked,
                           })
                         }
-                        className="w-6 h-6 rounded-lg border-cream-300 text-rose-brand focus:ring-rose-brand transition-all cursor-pointer"
+                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg border-cream-300 text-rose-brand focus:ring-rose-brand transition-all cursor-pointer"
                       />
                     </div>
                     <label
                       htmlFor="isDefaultModal"
-                      className="text-sm font-bold text-ink cursor-pointer select-none"
+                      className="text-xs sm:text-sm font-bold text-ink cursor-pointer select-none"
                     >
                       Set as my primary delivery address
                     </label>
                   </div>
 
-                  <div className="pt-8 flex gap-4">
+                  <div className="pt-4 sm:pt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <button
                       type="submit"
                       disabled={
                         addAddressMutation.isPending ||
                         updateAddressMutation.isPending
                       }
-                      className="btn-primary flex-1 py-5 rounded-2xl shadow-xl shadow-rose-brand/30 text-base font-bold tracking-wide"
+                      className="order-1 sm:order-2 flex-1 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-rose-brand text-white shadow-xl shadow-rose-brand/30 text-sm sm:text-base font-bold tracking-wide hover:bg-rose-700 transition-all active:scale-[0.98]"
                     >
                       {addAddressMutation.isPending ||
                       updateAddressMutation.isPending ? (
-                        <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
                       ) : editingAddress ? (
-                        "Update Details"
+                        "Update Destination"
                       ) : (
-                        "Save Destination"
+                        "Save Address"
                       )}
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsAddressModalOpen(false)}
-                      className="btn-outline px-10 py-5 rounded-2xl bg-white border-cream-200"
+                      className="order-2 sm:order-1 px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-white text-ink-muted font-bold text-xs sm:text-sm uppercase tracking-widest border border-cream-200 hover:bg-cream-50 transition-all"
                     >
                       Cancel
                     </button>

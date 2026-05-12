@@ -18,8 +18,10 @@ const ProductDetailPage = lazy(() => import('../pages/shop/ProductDetailPage'));
 const WishlistPage = lazy(() => import('../pages/shop/WishlistPage'));
 const CheckoutPage = lazy(() => import('../pages/checkout/CheckoutPage'));
 const TrackOrderPage = lazy(() => import('../pages/orders/TrackOrderPage'));
-const OrderHistoryPage = lazy(() => import('../pages/orders/OrderHistoryPage'));
+
 const ProfilePage = lazy(() => import('../pages/user/ProfilePage'));
+const FaqPage = lazy(() => import('../pages/shop/FaqPage'));
+const ContactPage = lazy(() => import('../pages/home/ContactPage'));
 
 import LoadingScreen from '../components/ui/LoadingScreen';
 
@@ -61,13 +63,15 @@ export default function AppRouter() {
             <Route path="/products/:slug" element={<ProductDetailPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/contact" element={<ContactPage />} />
 
             {/* Protected Features */}
             <Route path="/cart" element={<Placeholder title="Cart" />} />
             <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
             <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
             <Route path="/track-order/:awb" element={<TrackOrderPage />} />
-            <Route path="/orders" element={<ProtectedRoute><OrderHistoryPage /></ProtectedRoute>} />
+            <Route path="/orders" element={<Navigate to="/profile#orders" replace />} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           </Route>
 

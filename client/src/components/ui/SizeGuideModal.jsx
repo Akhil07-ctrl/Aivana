@@ -92,21 +92,21 @@ export default function SizeGuideModal({ isOpen, onClose, subcategory }) {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col w-full max-w-xl max-h-[85vh] pointer-events-auto"
             >
-              <div className="p-6 sm:p-8 overflow-y-auto custom-scrollbar">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-display font-bold text-ink">Size Guide</h2>
-                  <button onClick={onClose} className="p-2 hover:bg-cream-100 rounded-full transition-colors">
-                    <FiX size={24} />
+              <div className="p-4 sm:p-6 md:p-8 overflow-y-auto custom-scrollbar">
+                <div className="flex justify-between items-center mb-4 sm:mb-6">
+                  <h2 className="text-xl sm:text-2xl font-display font-bold text-ink">Size Guide</h2>
+                  <button onClick={onClose} className="p-1.5 sm:p-2 hover:bg-cream-100 rounded-full transition-colors">
+                    <FiX size={20} className="sm:w-6 sm:h-6" />
                   </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-2 mb-6">
+                <div className="flex gap-1.5 sm:gap-2 mb-6">
                   {TABS.map(tab => (
                     <button
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key)}
-                      className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all ${activeTab === tab.key
+                      className={`flex-1 py-2 sm:py-2.5 px-1 sm:px-2 rounded-lg sm:rounded-xl text-[9px] sm:text-xs md:text-sm font-bold uppercase tracking-wider transition-all leading-tight ${activeTab === tab.key
                           ? 'bg-ink text-white shadow-lg'
                           : 'bg-cream-50 text-ink-muted hover:bg-cream-100 border border-cream-200'
                         }`}
@@ -123,13 +123,13 @@ export default function SizeGuideModal({ isOpen, onClose, subcategory }) {
                       : 'All measurements are in centimeters (cm). For the best fit, measure a similar garment you already own.'}
                   </p>
 
-                  <div className="overflow-x-auto rounded-xl border border-cream-200">
-                    <table className="w-full text-left border-collapse min-w-[400px]">
+                  <div className="overflow-x-auto rounded-xl border border-cream-200 no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[320px] sm:min-w-[400px]">
                       <thead className="bg-cream-50">
                         <tr>
-                          <th className="px-4 py-3 text-xs font-bold text-ink-muted uppercase tracking-wider">Size</th>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-bold text-ink-muted uppercase tracking-wider">Size</th>
                           {Object.keys(data[0]).filter(k => k !== 'size').map(key => (
-                            <th key={key} className="px-4 py-3 text-xs font-bold text-ink-muted uppercase tracking-wider capitalize">
+                            <th key={key} className="px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-bold text-ink-muted uppercase tracking-wider capitalize">
                               {key.replace(/([A-Z])/g, ' $1').trim()}
                             </th>
                           ))}
@@ -138,9 +138,9 @@ export default function SizeGuideModal({ isOpen, onClose, subcategory }) {
                       <tbody className="divide-y divide-cream-100">
                         {data.map((row, idx) => (
                           <tr key={idx} className="hover:bg-cream-50/50 transition-colors">
-                            <td className="px-4 py-4 text-sm font-bold text-ink">{row.size}</td>
+                            <td className="px-3 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-bold text-ink">{row.size}</td>
                             {Object.entries(row).filter(([k]) => k !== 'size').map(([key, val]) => (
-                              <td key={key} className="px-4 py-4 text-sm text-ink-muted">
+                              <td key={key} className="px-3 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-ink-muted whitespace-nowrap">
                                 {val}{key === 'footLength' ? ' cm' : activeTab !== 'footwear' ? ' cm' : ''}
                               </td>
                             ))}
@@ -150,13 +150,13 @@ export default function SizeGuideModal({ isOpen, onClose, subcategory }) {
                     </table>
                   </div>
 
-                  <div className="bg-cream-50 p-5 rounded-2xl border border-cream-200">
-                    <h4 className="text-xs font-bold text-ink uppercase tracking-wider mb-3">How to measure</h4>
-                    <ul className="text-sm text-ink-muted space-y-2.5 list-none pl-0">
+                  <div className="bg-cream-50 p-4 sm:p-5 rounded-2xl border border-cream-200">
+                    <h4 className="text-[10px] sm:text-xs font-bold text-ink uppercase tracking-wider mb-2 sm:mb-3">How to measure</h4>
+                    <ul className="text-xs sm:text-sm text-ink-muted space-y-3 sm:space-y-2.5 list-none pl-0">
                       {tips.map(({ label, tip }) => (
-                        <li key={label} className="flex gap-2">
-                          <span className="font-bold text-ink min-w-[80px]">{label}:</span>
-                          <span>{tip}</span>
+                        <li key={label} className="flex flex-col sm:flex-row gap-0.5 sm:gap-2">
+                          <span className="font-bold text-ink sm:min-w-[80px]">{label}:</span>
+                          <span className="leading-relaxed">{tip}</span>
                         </li>
                       ))}
                     </ul>

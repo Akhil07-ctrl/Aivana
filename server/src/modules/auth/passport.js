@@ -1,6 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../user/user.model.js';
+import { sendEmail, generateWelcomeEmail } from '../../utils/sendEmail.js';
 
 // Google Strategy
 passport.use(
@@ -32,6 +33,13 @@ passport.use(
           avatar: { url: profile.photos[0]?.value || '', publicId: '' },
           isVerified: true,
         });
+
+        // Send welcome email asynchronously
+        sendEmail({
+          to: user.email,
+          subject: "Welcome to Aivana! 🎉",
+          template: generateWelcomeEmail(user),
+        }).catch((e) => console.error("[AUTH EMAIL ERROR]", e));
 
         return done(null, user);
       } catch (err) {
