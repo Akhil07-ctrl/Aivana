@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiCopy, FiCheck, FiShare2, FiMail } from 'react-icons/fi';
 import { FaWhatsapp, FaTelegramPlane, FaTwitter, FaFacebook } from 'react-icons/fa';
@@ -37,15 +37,27 @@ const socialPlatforms = [
   }
 ];
 
-export default function ShareModal({ isOpen, onClose, product }) {
+export default function ShareModal() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [product, setProduct] = useState(null);
   const [copied, setCopied] = useState(false);
   const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
 
-  if (!product) return null;
+  useEffect(() => {
+    const handleOpenShare = (e) => {
+      setProduct(e.detail.product);
+      setIsOpen(true);
+    };
 
-  const productUrl = `${window.location.origin}/products/${product.slug}`;
-  const shareTitle = product.name;
-  const shareText = `Check out this amazing product: ${product.name}`;
+    window.addEventListener('share:open', handleOpenShare);
+    return () => window.removeEventListener('share:open', handleOpenShare);
+  }, []);
+
+  if (!product && !isOpen) return null;
+
+  const productUrl = product ? `${window.location.origin}/products/${product.slug}` : '';
+  const shareTitle = product?.name || '';
+  const shareText = `Check out this amazing product: ${product?.name}`;
 
   const handleCopyLink = async () => {
     try {
@@ -54,7 +66,6 @@ export default function ShareModal({ isOpen, onClose, product }) {
       toast.success('Link copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = productUrl;
       document.body.appendChild(textArea);
@@ -80,7 +91,7 @@ export default function ShareModal({ isOpen, onClose, product }) {
         text: shareText,
         url: productUrl
       });
-      onClose();
+      setIsOpen(false);
     } catch (err) {
       if (err.name !== 'AbortError') {
         console.error('Share failed:', err);
@@ -93,11 +104,11 @@ export default function ShareModal({ isOpen, onClose, product }) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={() => setIsOpen(false)}
         >
           <motion.div
             className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
@@ -110,7 +121,7 @@ export default function ShareModal({ isOpen, onClose, product }) {
             <div className="flex items-center justify-between p-4 border-b border-cream-200">
               <h3 className="text-lg font-bold text-ink">Share Product</h3>
               <button
-                onClick={onClose}
+                onClick={() => setIsOpen(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-cream-100 transition"
               >
                 <FiX size={20} className="text-ink" />
@@ -120,13 +131,13 @@ export default function ShareModal({ isOpen, onClose, product }) {
             {/* Product Preview */}
             <div className="px-4 py-3 bg-cream-50 flex items-center gap-3">
               <img
-                src={product.images?.[0]?.url || product.images?.find(img => img.isPrimary)?.url || 'https://via.placeholder.com/100x100?text=No+Image'}
-                alt={product.name}
+                src={product?.images?.[0]?.url || product?.images?.find(img => img.isPrimary)?.url || 'https://via.placeholder.com/100x100?text=No+Image'}
+                alt={product?.name}
                 className="w-14 h-14 object-cover rounded-lg"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-ink text-sm truncate">{product.name}</p>
-                <p className="text-rose-brand font-bold text-sm">₹{product.price?.toLocaleString('en-IN')}</p>
+                <p className="font-semibold text-ink text-sm truncate">{product?.name}</p>
+                <p className="text-rose-brand font-bold text-sm">₹{product?.price?.toLocaleString('en-IN')}</p>
               </div>
             </div>
 
@@ -187,3 +198,9 @@ export default function ShareModal({ isOpen, onClose, product }) {
     </AnimatePresence>
   );
 }
+
+export const triggerShare = (product) => {
+  window.dispatchEvent(new CustomEvent('share:open', { 
+    detail: { product } 
+  }));
+};

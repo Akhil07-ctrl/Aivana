@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,7 +7,7 @@ import axiosInstance from '../../api/axiosInstance';
 import PageWrapper from '../../components/layout/PageWrapper';
 import SimilarProducts from '../../components/product/SimilarProducts';
 import ProductReviews from '../../components/product/ProductReviews';
-import ShareModal from '../../components/ui/ShareModal';
+import { triggerShare } from '../../components/ui/ShareModal';
 import SizeGuideModal from '../../components/ui/SizeGuideModal';
 import toast from 'react-hot-toast';
 import OptimizedImage from '../../components/ui/OptimizedImage';
@@ -15,6 +15,7 @@ import useCartStore from '../../store/cartStore';
 import useWishlistStore from '../../store/wishlistStore';
 import useAuthStore from '../../store/authStore';
 import { NO_SIZE_SUBCATEGORIES } from '../../constants/categories';
+import { triggerFlyToCart } from '../../components/ui/FlyToCart';
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -22,11 +23,11 @@ export default function ProductDetailPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-  const [isShareOpen, setIsShareOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const { addToCart, isLoading: isAddingToCart } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const { user } = useAuthStore();
+  const productImageRef = useRef(null);
 
   // Fetch product data
   const { data, isLoading, isError } = useQuery({
@@ -61,6 +62,22 @@ export default function ProductDetailPage() {
     return product.variants.some(v => v.color === color && v.stock > 0);
   };
 
+  // Auto-select defaults
+  useEffect(() => {
+    if (product) {
+      // If no size selected and sizes exist, pick first in-stock size
+      if (!selectedSize && availableSizes.length > 0) {
+        const firstInStock = availableSizes.find(s => isSizeInStock(s));
+        if (firstInStock) setSelectedSize(firstInStock);
+      }
+      // If no color selected and colors exist, pick first in-stock color
+      if (!selectedColor && availableColors.length > 0) {
+        const firstInStock = availableColors.find(c => isColorInStock(c));
+        if (firstInStock) setSelectedColor(firstInStock);
+      }
+    }
+  }, [product, availableSizes, availableColors]);
+
   const handleAddToCart = async () => {
     if (showSizes && !selectedSize) {
       return toast.error('Please select a size');
@@ -79,6 +96,16 @@ export default function ProductDetailPage() {
     }
 
     try {
+      // Trigger fly-to-cart animation
+      if (productImageRef.current) {
+        const rect = productImageRef.current.getBoundingClientRect();
+        triggerFlyToCart(
+          product.images[activeImage]?.url || product.images[0]?.url,
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2
+        );
+      }
+
       await addToCart({
         productId: product._id,
         quantity: 1,
@@ -123,7 +150,7 @@ export default function ProductDetailPage() {
       }
     }
 
-    setIsShareOpen(true);
+    triggerShare(product);
   };
 
   const inWishlist = product ? isInWishlist(product._id) : false;
@@ -153,7 +180,7 @@ export default function ProductDetailPage() {
     <PageWrapper>
       <div className="container-main py-8 md:py-12">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs sm:text-sm text-ink-muted mb-6 md:mb-8 overflow-x-auto no-scrollbar whitespace-nowrap">
+        <nav className="flex items-center gap-2 text-[10px] sm:text-xs md:text-sm text-ink-muted mb-4 md:mb-8 overflow-x-auto no-scrollbar whitespace-nowrap px-1">
           <button
             onClick={() => navigate(-1)}
             className="hover:text-rose-brand transition flex items-center gap-1 flex-shrink-0"
@@ -163,7 +190,7 @@ export default function ProductDetailPage() {
           <span className="opacity-40">/</span>
           <Link to={`/shop?category=${product.category}`} className="hover:text-ink flex-shrink-0">{product.category}</Link>
           <span className="opacity-40">/</span>
-          <span className="text-ink font-medium">{product.name}</span>
+          <span className="text-ink font-medium truncate max-w-[150px] sm:max-w-none">{product.name}</span>
         </nav>
 
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
@@ -242,6 +269,7 @@ export default function ProductDetailPage() {
                         alt={product.name}
                         width={800}
                         priority
+                        ref={productImageRef}
                         className="w-full h-full object-cover pointer-events-none"
                       />
                     </motion.div>
@@ -264,7 +292,7 @@ export default function ProductDetailPage() {
 
           {/* Right: Product Info */}
           <div className="w-full lg:w-1/2 flex flex-col">
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-ink mb-4 leading-tight">
+            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-ink mb-3 sm:mb-4 leading-tight">
               {product.name}
             </h1>
 
@@ -395,11 +423,11 @@ export default function ProductDetailPage() {
             )}
 
             {/* Actions */}
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8 sm:mb-10">
               <button
                 onClick={handleAddToCart}
                 disabled={product.totalStock <= 0 || isAddingToCart}
-                className={`w-full sm:flex-1 py-3.5 sm:py-4 text-base sm:text-lg order-1 sm:order-none rounded-xl font-bold transition-all ${product.totalStock <= 0
+                className={`w-full sm:flex-1 py-4 text-base sm:text-lg rounded-xl font-bold transition-all ${product.totalStock <= 0
                   ? 'bg-cream-200 text-ink-muted cursor-not-allowed'
                   : isAddingToCart
                     ? 'btn-primary opacity-70 cursor-wait'
@@ -408,16 +436,16 @@ export default function ProductDetailPage() {
               >
                 {isAddingToCart ? 'Adding...' : product.totalStock > 0 ? 'Add to Cart' : 'Out of Stock'}
               </button>
-              <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto order-2 sm:order-none">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button
                   onClick={handleToggleWishlist}
-                  className={`flex-1 sm:flex-none sm:w-14 h-12 sm:h-14 flex items-center justify-center rounded-lg border transition ${inWishlist ? 'border-rose-brand text-rose-brand' : 'border-cream-300 text-ink hover:text-rose-brand hover:border-cream-300'} bg-white hover:bg-cream-100`}
+                  className={`flex-1 sm:w-14 h-12 sm:h-14 flex items-center justify-center rounded-xl border transition ${inWishlist ? 'border-rose-brand text-rose-brand' : 'border-cream-300 text-ink hover:text-rose-brand hover:border-cream-300'} bg-white hover:bg-cream-100 shadow-sm`}
                 >
                   <FiHeart size={20} className={inWishlist ? "fill-rose-brand" : ""} />
                 </button>
                 <button
                   onClick={handleShare}
-                  className="flex-1 sm:flex-none sm:w-14 h-12 sm:h-14 flex items-center justify-center rounded-lg border border-cream-300 text-ink hover:text-rose-brand hover:border-cream-300 bg-white transition hover:bg-cream-100"
+                  className="flex-1 sm:w-14 h-12 sm:h-14 flex items-center justify-center rounded-xl border border-cream-300 text-ink hover:text-rose-brand hover:border-cream-300 bg-white transition hover:bg-cream-100 shadow-sm"
                 >
                   <FiShare2 size={20} />
                 </button>
@@ -425,23 +453,23 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Guarantees */}
-            <div className="bg-cream-50 p-6 rounded-xl flex flex-col gap-4">
+            <div className="bg-cream-50 p-4 sm:p-6 rounded-xl flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                  <FiTruck className="text-rose-brand" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                  <FiTruck className="text-rose-brand text-sm sm:text-base" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">Free Express Shipping</p>
-                  <p className="text-xs text-ink-muted mt-0.5">Delivery in 2-4 business days.</p>
+                  <p className="font-semibold text-xs sm:text-sm">Free Express Shipping</p>
+                  <p className="text-[10px] sm:text-xs text-ink-muted mt-0.5">Delivery in 2-4 business days.</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                  <FiShield className="text-rose-brand" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                  <FiShield className="text-rose-brand text-sm sm:text-base" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">14-Day Free Returns</p>
-                  <p className="text-xs text-ink-muted mt-0.5">Not perfect? Return it easily.</p>
+                  <p className="font-semibold text-xs sm:text-sm">14-Day Free Returns</p>
+                  <p className="text-[10px] sm:text-xs text-ink-muted mt-0.5">Not perfect? Return it easily.</p>
                 </div>
               </div>
             </div>
@@ -460,13 +488,6 @@ export default function ProductDetailPage() {
 
         {/* Similar Products */}
         <SimilarProducts productId={product._id} category={product.category} />
-
-        {/* Share Modal */}
-        <ShareModal
-          isOpen={isShareOpen}
-          onClose={() => setIsShareOpen(false)}
-          product={product}
-        />
 
         {/* Size Guide Modal */}
         <SizeGuideModal

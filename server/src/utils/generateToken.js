@@ -20,6 +20,8 @@ export const setTokenCookie = (res, token) => {
 export const clearTokenCookie = (res) => {
   res.cookie('aivana_token', '', {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
     expires: new Date(0),
   });
 };

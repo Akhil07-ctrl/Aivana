@@ -234,6 +234,18 @@ export default function Navbar() {
     setIsMobileSearchOpen(false);
   }, [location.pathname]);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
+
   // Click outside to close user menu
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -434,6 +446,7 @@ export default function Navbar() {
             )}
 
             <button
+              id="nav-cart-btn"
               onClick={() => setCartOpen(true)}
               className={`p-2 transition relative cursor-pointer rounded-full ${
                 isDarkHeader ? 'text-white hover:text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
@@ -469,23 +482,25 @@ export default function Navbar() {
                 <div className="flex items-center gap-1 lg:gap-2">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className={`flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-full border transition-all duration-200 ${
+                    className={`flex items-center gap-2 p-1 lg:pr-4 rounded-full transition-all duration-300 group ${
                       userMenuOpen 
-                        ? 'bg-ink border-ink text-white' 
+                        ? 'bg-ink text-white shadow-lg shadow-ink/20' 
                         : isDarkHeader
-                          ? 'bg-white/20 border-white/40 text-white hover:bg-white/30'
-                          : 'bg-white border-cream-300 text-ink hover:border-rose-brand hover:shadow-sm'
+                          ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md'
+                          : 'bg-white hover:bg-cream-50 border border-cream-200 text-ink shadow-sm hover:shadow-md hover:border-rose-brand/30'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center ring-1 ring-black/5 shrink-0 ${isDarkHeader && !userMenuOpen ? 'bg-white/20' : 'bg-cream-100'}`}>
+                    <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 ${isDarkHeader && !userMenuOpen ? 'bg-white/20' : 'bg-cream-100'} ${userMenuOpen ? 'ring-2 ring-white/20' : ''}`}>
                       {user.avatar?.url ? (
                         <img src={user.avatar.url} alt="Avatar" className="w-full h-full object-cover object-center" referrerPolicy="no-referrer" />
                       ) : (
-                        <FiUser size={16} className={userMenuOpen || isDarkHeader ? "text-white/90" : "text-ink-muted"} />
+                        <FiUser size={15} className={userMenuOpen || isDarkHeader ? "text-white" : "text-ink-muted"} />
                       )}
                     </div>
-                    <span className="hidden lg:block text-sm font-semibold pr-1">My Account</span>
-                    <FiChevronDown size={14} className={`hidden lg:block transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
+                    <span className="hidden lg:block text-sm font-bold tracking-wide">
+                      {user.name ? user.name.split(' ')[0] : 'Account'}
+                    </span>
+                    <FiChevronDown size={14} className={`hidden lg:block transition-transform duration-300 ${userMenuOpen ? 'rotate-180 text-white/80' : 'opacity-40 group-hover:opacity-100 group-hover:text-rose-brand'}`} />
                   </button>
 
                   <AnimatePresence>

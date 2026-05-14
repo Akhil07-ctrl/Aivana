@@ -103,7 +103,7 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const products = await Product.find(query)
     .sort(sortOption)
-    .select('name slug price msrp images category totalStock averageRating numOfReviews status')
+    .select('name slug price msrp images category variants totalStock averageRating numOfReviews status')
     .lean()
     .limit(limit * 1)
     .skip((page - 1) * limit);
@@ -180,7 +180,7 @@ export const getTrendingProducts = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 8;
   
   const products = await Product.find({ isTrending: true, status: 'active' })
-    .select('name slug price msrp images category totalStock averageRating numOfReviews status')
+    .select('name slug price msrp images category variants totalStock averageRating numOfReviews status')
     .limit(limit)
     .sort({ updatedAt: -1 });
 

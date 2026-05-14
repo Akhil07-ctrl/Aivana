@@ -36,6 +36,15 @@ const useCartStore = create(
       addToCart: async ({ productId, quantity = 1, size, color, productData }) => {
         const user = useAuthStore.getState().user;
         
+        // Helpers for normalization
+        const isOneSize = (s) => ["one size", "n/a", "none", ""].includes((s || "").trim().toLowerCase());
+        const normalize = (s) => (s || "").trim().toLowerCase();
+        const specsMatch = (s1, c1, s2, c2) => {
+          const sizeMatch = normalize(s1) === normalize(s2) || (isOneSize(s1) && isOneSize(s2));
+          const colorMatch = normalize(c1) === normalize(c2) || (isOneSize(c1) && isOneSize(c2));
+          return sizeMatch && colorMatch;
+        };
+
         if (user) {
           try {
             set({ isLoading: true });
@@ -55,7 +64,7 @@ const useCartStore = create(
           const items = [...(cart?.items || [])];
           
           const existingIndex = items.findIndex(
-            (item) => item.product._id === productId && item.size === size && item.color === color
+            (item) => item.product._id === productId && specsMatch(item.size, item.color, size, color)
           );
 
           if (existingIndex > -1) {
@@ -80,6 +89,15 @@ const useCartStore = create(
 
       updateQuantity: async ({ productId, size, color, quantity }) => {
         const user = useAuthStore.getState().user;
+
+        // Helpers for normalization
+        const isOneSize = (s) => ["one size", "n/a", "none", ""].includes((s || "").trim().toLowerCase());
+        const normalize = (s) => (s || "").trim().toLowerCase();
+        const specsMatch = (s1, c1, s2, c2) => {
+          const sizeMatch = normalize(s1) === normalize(s2) || (isOneSize(s1) && isOneSize(s2));
+          const colorMatch = normalize(c1) === normalize(c2) || (isOneSize(c1) && isOneSize(c2));
+          return sizeMatch && colorMatch;
+        };
         
         if (user) {
           try {
@@ -92,7 +110,7 @@ const useCartStore = create(
           const { cart } = get();
           const items = [...(cart?.items || [])];
           const existingIndex = items.findIndex(
-            (item) => item.product._id === productId && item.size === size && item.color === color
+            (item) => item.product._id === productId && specsMatch(item.size, item.color, size, color)
           );
 
           if (existingIndex > -1) {
@@ -105,6 +123,15 @@ const useCartStore = create(
       removeItem: async ({ productId, size, color }) => {
         const user = useAuthStore.getState().user;
 
+        // Helpers for normalization
+        const isOneSize = (s) => ["one size", "n/a", "none", ""].includes((s || "").trim().toLowerCase());
+        const normalize = (s) => (s || "").trim().toLowerCase();
+        const specsMatch = (s1, c1, s2, c2) => {
+          const sizeMatch = normalize(s1) === normalize(s2) || (isOneSize(s1) && isOneSize(s2));
+          const colorMatch = normalize(c1) === normalize(c2) || (isOneSize(c1) && isOneSize(c2));
+          return sizeMatch && colorMatch;
+        };
+
         if (user) {
           try {
             const res = await axiosInstance.put('/cart/items', { productId, size, color, quantity: 0 });
@@ -116,7 +143,7 @@ const useCartStore = create(
         } else {
           const { cart } = get();
           const items = (cart?.items || []).filter(
-            (item) => !(item.product._id === productId && item.size === size && item.color === color)
+            (item) => !(item.product._id === productId && specsMatch(item.size, item.color, size, color))
           );
           set({ cart: { items, totalPrice: calculateTotal(items) } });
           toast.success('Item removed');

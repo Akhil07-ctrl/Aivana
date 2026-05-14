@@ -24,13 +24,17 @@ export default function Footer() {
     { icon: FiYoutube, label: 'Youtube' },
   ];
 
+  const handleLinkClick = () => {
+    window.scrollTo(0, 0);
+  };
+
   return (
     <footer className="bg-ink text-white pt-16 pb-8">
       <div className="container-main">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/10 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 border-b border-white/10 pb-12">
 
           <div className="md:col-span-1">
-            <Link to="/" className="font-display font-bold text-3xl tracking-wide text-white">
+            <Link to="/" onClick={handleLinkClick} className="font-display font-bold text-3xl tracking-wide text-white">
               Aivana
             </Link>
             <p className="mt-4 text-cream-300/70 text-sm leading-relaxed max-w-xs">
@@ -49,7 +53,7 @@ export default function Footer() {
                 { label: 'Sale', path: '/shop?category=Sale' }
               ].map(link => (
                 <li key={link.label}>
-                  <Link to={link.path} className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
+                  <Link to={link.path} onClick={handleLinkClick} className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
                     {link.label}
                   </Link>
                 </li>
@@ -61,7 +65,7 @@ export default function Footer() {
             <h3 className="font-semibold text-white tracking-wider uppercase text-sm mb-6">Help</h3>
             <ul className="space-y-3">
               <li key="Track Order">
-                <Link to="/profile#orders" className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
+                <Link to="/profile#orders" onClick={handleLinkClick} className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
                   Track Order
                 </Link>
               </li>
@@ -73,12 +77,12 @@ export default function Footer() {
                 </li>
               ))}
               <li key="FAQ">
-                <Link to="/faq" className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
+                <Link to="/faq" onClick={handleLinkClick} className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
                   FAQ
                 </Link>
               </li>
               <li key="Contact Us">
-                <Link to="/contact" className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
+                <Link to="/contact" onClick={handleLinkClick} className="text-cream-300/70 hover:text-rose-brand transition text-sm block">
                   Contact Us
                 </Link>
               </li>

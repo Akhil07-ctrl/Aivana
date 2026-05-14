@@ -14,12 +14,15 @@ export default function ProductReviews({ productId, averageRating, numOfReviews 
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
   const [hoverRating, setHoverRating] = useState(0);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyComment, setReplyComment] = useState('');
+  const [displayLimit, setDisplayLimit] = useState(5);
 
   // Fetch reviews
   const { data, isLoading } = useQuery({
-    queryKey: ['reviews', productId],
+    queryKey: ['reviews', productId, displayLimit],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/reviews/${productId}`);
+      const res = await axiosInstance.get(`/reviews/${productId}?limit=${displayLimit}`);
       return res.data.data;
     }
   });
@@ -34,7 +37,7 @@ export default function ProductReviews({ productId, averageRating, numOfReviews 
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['reviews', productId]);
-      queryClient.invalidateQueries(['product']); // Broader invalidation to catch 'product' + slug
+      queryClient.invalidateQueries(['product']);
       toast.success('Review submitted successfully!');
       setIsFormOpen(false);
       setRating(5);
@@ -45,6 +48,29 @@ export default function ProductReviews({ productId, averageRating, numOfReviews 
       toast.error(error.response?.data?.message || 'Failed to submit review');
     }
   });
+
+  const replyMutation = useMutation({
+    mutationFn: async ({ reviewId, comment }) => {
+      const res = await axiosInstance.post(`/reviews/${reviewId}/reply`, { comment });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['reviews', productId]);
+      toast.success('Reply added!');
+      setReplyingTo(null);
+      setReplyComment('');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to add reply');
+    }
+  });
+
+  const handleReplySubmit = (e, reviewId) => {
+    e.preventDefault();
+    if (!user) return toast.error('Please login to reply');
+    if (!replyComment.trim()) return toast.error('Reply cannot be empty');
+    replyMutation.mutate({ reviewId, comment: replyComment });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -62,18 +88,18 @@ export default function ProductReviews({ productId, averageRating, numOfReviews 
         <div className="lg:w-1/3">
           <h2 className="font-display text-3xl font-bold text-ink mb-8">Customer Reviews</h2>
           
-          <div className="bg-cream-50 rounded-[2rem] p-8 border border-cream-200">
-            <div className="flex items-center gap-6 mb-8">
-              <div className="text-6xl font-bold text-ink">
+          <div className="bg-cream-50 rounded-[2rem] p-5 sm:p-8 border border-cream-200">
+            <div className="flex items-center gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="text-5xl sm:text-6xl font-bold text-ink">
                 {averageRating?.toFixed(1) || '0.0'}
               </div>
               <div>
                 <div className="flex text-yellow-500 mb-1">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <FiStar key={s} className={s <= Math.round(averageRating) ? 'fill-yellow-500' : 'text-cream-200'} size={20} />
+                    <FiStar key={s} className={s <= Math.round(averageRating) ? 'fill-yellow-500' : 'text-cream-200'} size={18} />
                   ))}
                 </div>
-                <p className="text-sm font-medium text-ink-muted">Based on {numOfReviews || 0} reviews</p>
+                <p className="text-xs sm:text-sm font-medium text-ink-muted">Based on {numOfReviews || 0} reviews</p>
               </div>
             </div>
 
@@ -205,15 +231,15 @@ export default function ProductReviews({ productId, averageRating, numOfReviews 
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-cream-100 rounded-full overflow-hidden flex items-center justify-center border border-cream-200 ring-2 ring-white ring-offset-2 ring-offset-cream-100 shadow-sm">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cream-100 rounded-full overflow-hidden flex items-center justify-center border border-cream-200 ring-2 ring-white ring-offset-2 ring-offset-cream-100 shadow-sm flex-shrink-0">
                             {review.user?.avatar?.url ? (
                               <img src={review.user.avatar.url} alt="User" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                             ) : (
-                              <span className="text-lg font-bold text-ink-muted">{review.user?.name?.charAt(0)}</span>
+                              <span className="text-base sm:text-lg font-bold text-ink-muted">{review.user?.name?.charAt(0)}</span>
                             )}
                           </div>
-                          <div>
-                            <h4 className="font-bold text-ink text-lg">{review.user?.name || 'Aivana Member'}</h4>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-ink text-base sm:text-lg truncate">{review.user?.name || 'Aivana Member'}</h4>
                             <div className="flex items-center gap-3 mt-0.5">
                               <p className="text-[10px] text-ink-muted uppercase tracking-[0.15em] font-bold">
                                 {new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -233,47 +259,107 @@ export default function ProductReviews({ productId, averageRating, numOfReviews 
                         </div>
                       </div>
 
-                      <h5 className="text-xl font-bold text-ink mb-3 font-display">{review.title}</h5>
-                      <p className="text-ink-light leading-relaxed mb-8 italic text-lg opacity-90">"{review.comment}"</p>
+                      <h5 className="text-lg sm:text-xl font-bold text-ink mb-3 font-display">{review.title}</h5>
+                      <p className="text-ink-light leading-relaxed mb-6 sm:mb-8 italic text-base sm:text-lg opacity-90">"{review.comment}"</p>
 
-                      <div className="flex items-center justify-between pt-6 border-t border-cream-100/60">
-                        <div className="flex items-center gap-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-6 border-t border-cream-100/60 gap-4">
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-6">
                           <button 
                             onClick={async () => {
+                              if (!user) return toast.error('Please login to vote');
                               try {
                                 await axiosInstance.post(`/reviews/${review._id}/helpful`);
                                 queryClient.invalidateQueries(['reviews', productId]);
-                                toast.success('Thanks for your feedback!', { icon: '👏' });
                               } catch (err) {
-                                toast.error('Already voted');
+                                toast.error('Voting failed');
                               }
                             }}
-                            className="flex items-center gap-2 text-xs font-bold text-ink-muted hover:text-rose-brand transition-all group/btn bg-cream-50/50 px-4 py-2 rounded-full border border-cream-100 hover:border-rose-brand/30 hover:bg-rose-50"
+                            className={`flex items-center gap-2 text-[10px] sm:text-xs font-bold transition-all group/btn px-3 sm:px-4 py-2 rounded-full border ${
+                              review.helpfulVotes?.includes(user?._id)
+                                ? 'bg-rose-brand text-white border-rose-brand shadow-md'
+                                : 'text-ink-muted hover:text-rose-brand bg-cream-50/50 border-cream-100 hover:border-rose-brand/30 hover:bg-rose-50'
+                            }`}
                           >
-                            <FiThumbsUp size={14} className="group-hover/btn:scale-110 group-hover/btn:-rotate-12 transition-transform" />
-                            <span>Found this helpful ({review.helpful || 0})</span>
+                            <FiThumbsUp size={14} className={`transition-transform ${review.helpfulVotes?.includes(user?._id) ? 'scale-110' : 'group-hover/btn:scale-110 group-hover/btn:-rotate-12'}`} />
+                            <span>Helpful ({review.helpful || 0})</span>
                           </button>
-                          <button className="flex items-center gap-2 text-xs font-bold text-ink-muted hover:text-ink transition-colors px-4 py-2 rounded-full hover:bg-cream-100">
+                          <button 
+                            onClick={() => setReplyingTo(replyingTo === review._id ? null : review._id)}
+                            className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-ink-muted hover:text-ink transition-colors px-3 sm:px-4 py-2 rounded-full hover:bg-cream-100"
+                          >
                             <FiMessageSquare size={14} />
                             <span>Reply</span>
                           </button>
                         </div>
-                        
-                        <div className="hidden sm:block">
-                          <div className="flex -space-x-2">
-                             {[1,2,3].map(i => (
-                               <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-cream-200 overflow-hidden">
-                                 <img src={`https://i.pravatar.cc/100?u=${review._id}${i}`} alt="user" className="w-full h-full object-cover opacity-60" />
-                               </div>
-                             ))}
-                             <div className="w-6 h-6 rounded-full border-2 border-white bg-cream-100 flex items-center justify-center text-[8px] font-bold text-ink-muted">
-                               +{Math.floor(Math.random() * 20)}
-                             </div>
-                          </div>
-                        </div>
                       </div>
+
+                      {/* Replies List */}
+                      {review.replies?.length > 0 && (
+                        <div className="mt-6 ml-2 sm:ml-6 space-y-4 border-l-2 border-cream-100 pl-4 sm:pl-6">
+                          {review.replies.map(reply => (
+                            <div key={reply._id} className="bg-cream-50/50 p-3 sm:p-4 rounded-2xl border border-cream-100/50">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-cream-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                  {reply.user?.avatar?.url ? (
+                                    <img src={reply.user.avatar.url} alt="User" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                  ) : (
+                                    <span className="text-[10px] font-bold text-ink-muted">{reply.user?.name?.charAt(0)}</span>
+                                  )}
+                                </div>
+                                <span className="text-xs font-bold text-ink">{reply.user?.name}</span>
+                                <span className="text-[10px] text-ink-muted">
+                                  {new Date(reply.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-ink-light leading-relaxed">{reply.comment}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Reply Form */}
+                      <AnimatePresence>
+                        {replyingTo === review._id && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mt-6 ml-2 sm:ml-6 overflow-hidden"
+                          >
+                            <form onSubmit={(e) => handleReplySubmit(e, review._id)} className="flex items-center gap-3">
+                              <div className="flex-1">
+                                <textarea
+                                  value={replyComment}
+                                  onChange={(e) => setReplyComment(e.target.value)}
+                                  placeholder="Write a reply..."
+                                  className="w-full bg-white border border-cream-200 rounded-xl px-4 py-3 text-sm text-ink focus:ring-2 focus:ring-rose-brand/20 focus:border-rose-brand transition-all outline-none resize-none"
+                                  rows={1}
+                                />
+                              </div>
+                              <button 
+                                type="submit"
+                                disabled={replyMutation.isPending}
+                                className="btn-primary p-3.5 rounded-xl shadow-lg shadow-rose-brand/10 disabled:opacity-50 flex-shrink-0"
+                              >
+                                <FiSend size={18} />
+                              </button>
+                            </form>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   ))
+                )}
+
+                {data?.totalReviews > reviews.length && (
+                  <div className="pt-8 flex justify-center">
+                    <button 
+                      onClick={() => setDisplayLimit(prev => prev + 5)}
+                      className="px-8 py-3 rounded-full border-2 border-cream-200 text-ink font-bold text-sm hover:border-rose-brand hover:text-rose-brand transition-all shadow-sm bg-white"
+                    >
+                      Load More Reviews
+                    </button>
+                  </div>
                 )}
               </div>
             )}

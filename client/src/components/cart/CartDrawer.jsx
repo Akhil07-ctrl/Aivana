@@ -47,26 +47,26 @@ export default function CartDrawer() {
             className="relative w-full max-w-md bg-white shadow-2xl flex flex-col h-full"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-cream-200">
-              <h2 className="font-display font-bold text-2xl text-ink items-center gap-2 flex">
-                <FiShoppingBag /> Your Cart <span className="text-sm font-normal text-ink-muted ml-2">({itemCount})</span>
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-cream-200">
+              <h2 className="font-display font-bold text-xl sm:text-2xl text-ink items-center gap-2 flex">
+                <FiShoppingBag /> Your Cart <span className="text-xs sm:text-sm font-normal text-ink-muted ml-2">({itemCount})</span>
               </h2>
               <button
                 onClick={() => setCartOpen(false)}
                 className="p-2 text-ink-muted hover:text-rose-brand transition-colors rounded-full hover:bg-cream-100"
               >
-                <FiX size={24} />
+                <FiX size={20} className="sm:w-6 sm:h-6" />
               </button>
             </div>
 
             {/* Cart Body */}
             {items.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                <div className="w-24 h-24 bg-cream-100 rounded-full flex items-center justify-center mb-6">
-                  <FiShoppingBag className="text-cream-300 w-12 h-12" />
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-cream-100 rounded-full flex items-center justify-center mb-6">
+                  <FiShoppingBag className="text-cream-300 w-10 h-10 sm:w-12 sm:h-12" />
                 </div>
-                <h3 className="text-xl font-bold text-ink mb-2">Your cart is empty</h3>
-                <p className="text-ink-muted mb-8 max-w-xs">
+                <h3 className="text-lg sm:text-xl font-bold text-ink mb-2">Your cart is empty</h3>
+                <p className="text-xs sm:text-sm text-ink-muted mb-8 max-w-xs px-4">
                   {user ? "Looks like you haven't added anything yet." : "Sign in to view your synced cart or start shopping now."}
                 </p>
                 <Link
@@ -78,7 +78,7 @@ export default function CartDrawer() {
                 </Link>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-4 sm:gap-6">
                 {items.map((item, idx) => {
                   const product = item.product;
                   const primaryImg = product?.images?.[0]?.url || 'https://via.placeholder.com/150';
@@ -135,18 +135,18 @@ export default function CartDrawer() {
 
             {/* Footer / Checkout */}
             {items.length > 0 && (
-              <div className="p-6 border-t border-cream-200 bg-cream-50">
+              <div className="p-4 sm:p-6 border-t border-cream-200 bg-cream-50">
                 <div className="flex justify-between items-center mb-4 text-ink">
-                  <span className="font-medium text-ink-muted">Subtotal</span>
-                  <span className="font-bold text-xl">₹{totalPrice?.toLocaleString('en-IN') || 'N/A'}</span>
+                  <span className="text-sm sm:text-base font-medium text-ink-muted">Subtotal</span>
+                  <span className="font-bold text-lg sm:text-xl">₹{totalPrice?.toLocaleString('en-IN') || 'N/A'}</span>
                 </div>
-                <p className="text-xs text-ink-muted mb-6">Shipping and taxes calculated at checkout.</p>
+                <p className="text-[10px] sm:text-xs text-ink-muted mb-5 sm:mb-6">Shipping and taxes calculated at checkout.</p>
 
                 {user ? (
                   <Link
                     to="/checkout"
                     onClick={() => setCartOpen(false)}
-                    className="btn-primary w-full text-center py-4 text-lg animate-pulse-once"
+                    className="btn-primary w-full text-center py-3.5 sm:py-4 text-base sm:text-lg animate-pulse-once"
                   >
                     Proceed to Checkout
                   </Link>
@@ -154,7 +154,7 @@ export default function CartDrawer() {
                   <Link
                     to="/login?redirect=cart"
                     onClick={() => setCartOpen(false)}
-                    className="btn-outline w-full text-center py-4 text-lg"
+                    className="btn-outline w-full text-center py-3.5 sm:py-4 text-base sm:text-lg"
                   >
                     Sign in to Checkout
                   </Link>

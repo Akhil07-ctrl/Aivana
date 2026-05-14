@@ -7,20 +7,24 @@
  * - Generates srcSet for retina displays (1x + 2x)
  * - Uses decoding="async" for non-blocking decode
  */
-export default function OptimizedImage({
+import { forwardRef } from 'react';
+
+const OptimizedImage = forwardRef(({
   src,
   alt = '',
   width,
   className = '',
   priority = false,
   ...props
-}) {
+}, ref) => {
+
   // Transform Cloudinary URLs to include optimization params
   const optimizedSrc = transformCloudinaryUrl(src, width);
   const retinaUrl = width ? transformCloudinaryUrl(src, width * 2) : null;
 
   return (
     <img
+      ref={ref}
       src={optimizedSrc}
       alt={alt}
       className={className}
@@ -31,7 +35,9 @@ export default function OptimizedImage({
       {...props}
     />
   );
-}
+});
+
+export default OptimizedImage;
 
 /**
  * Injects Cloudinary transform params (f_auto, q_auto, w_<width>) into a

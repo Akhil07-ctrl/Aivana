@@ -6,15 +6,17 @@ import useCartStore from '../../store/cartStore';
 import useWishlistStore from '../../store/wishlistStore';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
-import ShareModal from '../ui/ShareModal';
+import { triggerShare } from '../ui/ShareModal';
 import OptimizedImage from '../ui/OptimizedImage';
+import { useRef } from 'react';
+import { triggerFlyToCart } from '../ui/FlyToCart';
 
 const ProductCard = memo(function ProductCard({ product }) {
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const { addToCart } = useCartStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const [isShareOpen, setIsShareOpen] = useState(false);
+  const productImageRef = useRef(null);
 
   const primaryImage = product.images?.find(img => img.isPrimary)?.url
     || product.images?.[0]?.url
@@ -25,17 +27,23 @@ const ProductCard = memo(function ProductCard({ product }) {
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
-    if (!user) {
-      toast.error('Please login to add items to cart');
-      navigate('/login');
-      return;
-    }
     try {
+      // Trigger fly-to-cart animation
+      if (productImageRef.current) {
+        const rect = productImageRef.current.getBoundingClientRect();
+        triggerFlyToCart(
+          primaryImage,
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2
+        );
+      }
+
       await addToCart({
         productId: product._id,
         quantity: 1,
         size: product.variants?.[0]?.size,
-        color: product.variants?.[0]?.color
+        color: product.variants?.[0]?.color,
+        productData: product
       });
     } catch (error) {
       console.error('Add to cart error:', error);
@@ -71,7 +79,7 @@ const ProductCard = memo(function ProductCard({ product }) {
       }
     }
 
-    setIsShareOpen(true);
+    triggerShare(product);
   };
 
   return (
@@ -89,6 +97,7 @@ const ProductCard = memo(function ProductCard({ product }) {
     >
       <Link to={`/products/${product.slug}`} className="relative aspect-[3/4] overflow-hidden bg-cream-100 flex-shrink-0">
         <OptimizedImage
+          ref={productImageRef}
           src={primaryImage}
           alt={product.name}
           width={400}
@@ -105,9 +114,9 @@ const ProductCard = memo(function ProductCard({ product }) {
           )}
         </div>
 
-        {/* Hover Quick Action */}
+        {/* Hover Quick Action - Only for mouse devices */}
         {!isOutOfStock && (
-          <div className="absolute inset-0 bg-ink/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-end justify-between p-4">
+          <div className="absolute inset-0 bg-ink/10 opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 hidden lg:flex flex-col items-end justify-between p-4 pointer-events-none lg:group-hover:pointer-events-auto">
             <div className="flex gap-2">
               <button
                 onClick={handleToggleWishlist}
@@ -158,12 +167,6 @@ const ProductCard = memo(function ProductCard({ product }) {
         </div>
       </div>
 
-      {/* Share Modal */}
-      <ShareModal
-        isOpen={isShareOpen}
-        onClose={() => setIsShareOpen(false)}
-        product={product}
-      />
     </motion.div>
   );
 });

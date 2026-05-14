@@ -83,6 +83,11 @@ const useAuthStore = create((set, get) => ({
       // Clear cart locally
       useCartStore.setState({ cart: { items: [], totalPrice: 0 } });
 
+      // Disable Google One Tap auto-login
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        window.google.accounts.id.disableAutoSelect();
+      }
+
       if (user) {
         toast.success('Logged out successfully');
       }

@@ -7,7 +7,7 @@ import axiosInstance from '../../api/axiosInstance';
 export default function AiChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'ai', text: "Hello gorgeus! ✨ I'm your Aivana AI Stylist! Ask me for fashion tips, styling advice, or outfit recommendations." }
+    { role: 'ai', text: "Hello style seeker! ✨ I'm your Aivana AI Stylist! Ask me for fashion tips, styling advice, or outfit recommendations." }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);

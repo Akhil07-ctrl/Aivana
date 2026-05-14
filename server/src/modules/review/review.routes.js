@@ -7,13 +7,13 @@ import {
   deleteReview,
   markHelpful,
   getMyReviews,
+  addReply,
 } from './review.controller.js';
 
 const router = express.Router();
 
 // Public routes
 router.get('/:productId', getProductReviews);
-router.post('/:reviewId/helpful', markHelpful);
 
 // Protected routes (requires authentication)
 router.use(protect);
@@ -22,5 +22,7 @@ router.get('/user/myreviews', getMyReviews);
 router.post('/:productId', createReview);
 router.put('/:reviewId', updateReview);
 router.delete('/:reviewId', deleteReview);
+router.post('/:reviewId/helpful', markHelpful);
+router.post('/:reviewId/reply', addReply);
 
 export default router;

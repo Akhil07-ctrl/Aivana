@@ -68,7 +68,7 @@ export const createReview = asyncHandler(async (req, res) => {
 // @access  Public
 export const getProductReviews = asyncHandler(async (req, res) => {
   const { productId } = req.params;
-  const { sortBy = 'recent', page = 1, limit = 10 } = req.query;
+  const { sortBy = 'recent', page = 1, limit = 5 } = req.query;
 
   // Verify product exists
   const product = await Product.findById(productId);
@@ -90,6 +90,7 @@ export const getProductReviews = asyncHandler(async (req, res) => {
 
   const reviews = await Review.find({ product: productId })
     .populate('user', 'name avatar')
+    .populate('replies.user', 'name avatar')
     .sort(sortOption)
     .skip(skip)
     .limit(parseInt(limit));
@@ -191,21 +192,60 @@ export const deleteReview = asyncHandler(async (req, res) => {
 
 // @desc    Mark review as helpful
 // @route   POST /api/reviews/:reviewId/helpful
-// @access  Public
+// @access  Private
 export const markHelpful = asyncHandler(async (req, res) => {
   const { reviewId } = req.params;
+  const userId = req.user._id;
 
-  const review = await Review.findByIdAndUpdate(
-    reviewId,
-    { $inc: { helpful: 1 } },
-    { new: true }
-  );
+  const review = await Review.findById(reviewId);
 
   if (!review) {
     throw new ApiError(404, 'Review not found');
   }
 
+  // Check if user already voted
+  const hasVoted = review.helpfulVotes.includes(userId);
+
+  if (hasVoted) {
+    // Optional: Allow un-voting
+    review.helpfulVotes = review.helpfulVotes.filter(id => id.toString() !== userId.toString());
+    await review.save();
+    return res.json(new ApiResponse(200, review, 'Helpful vote removed'));
+  }
+
+  review.helpfulVotes.push(userId);
+  await review.save();
+
   res.json(new ApiResponse(200, review, 'Review marked as helpful'));
+});
+
+// @desc    Add a reply to a review
+// @route   POST /api/reviews/:reviewId/reply
+// @access  Private
+export const addReply = asyncHandler(async (req, res) => {
+  const { reviewId } = req.params;
+  const { comment } = req.body;
+  const userId = req.user._id;
+
+  if (!comment) {
+    throw new ApiError(400, 'Reply comment is required');
+  }
+
+  const review = await Review.findById(reviewId);
+
+  if (!review) {
+    throw new ApiError(404, 'Review not found');
+  }
+
+  review.replies.push({
+    user: userId,
+    comment,
+  });
+
+  await review.save();
+  await review.populate('replies.user', 'name avatar');
+
+  res.status(201).json(new ApiResponse(201, review, 'Reply added successfully'));
 });
 
 // @desc    Get reviews by user

@@ -68,7 +68,13 @@ export default function SizeGuideModal({ isOpen, onClose, subcategory }) {
   useEffect(() => {
     if (isOpen) {
       setActiveTab(detectCategory(subcategory));
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen, subcategory]);
 
   const data = sizeData[activeTab];

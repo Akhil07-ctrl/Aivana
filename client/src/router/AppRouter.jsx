@@ -1,5 +1,6 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import MainLayout from '../components/layout/MainLayout';
 import CartDrawer from '../components/cart/CartDrawer';
 import AiChatbot from '../components/chat/AiChatbot';
@@ -44,6 +45,24 @@ const Placeholder = ({ title }) => (
   </div>
 );
 
+// OAuth Success Handler
+function OAuthSuccessHandler() {
+  const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      toast.success(`Welcome back, ${user.name.split(' ')[0]}! ✨`, { id: 'welcome-toast' });
+    }
+    // Navigate after a tiny tick to ensure toast fires safely
+    setTimeout(() => {
+      navigate('/', { replace: true });
+    }, 50);
+  }, [user, navigate]);
+
+  return <LoadingScreen />;
+}
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
@@ -54,7 +73,7 @@ export default function AppRouter() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/oauth-success" element={<Navigate to="/" replace />} />
+          <Route path="/oauth-success" element={<OAuthSuccessHandler />} />
 
           {/* Main Application Layout (Has Navbar & Footer) */}
           <Route element={<MainLayout />}>

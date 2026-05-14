@@ -34,13 +34,42 @@ const reviewSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // true if user actually purchased this product
     },
-    helpful: {
-      type: Number,
-      default: 0, // Number of people who found this review helpful
-    },
+    helpfulVotes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    replies: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+        comment: {
+          type: String,
+          required: [true, 'Reply comment is required'],
+          maxlength: [500, 'Reply cannot exceed 500 characters'],
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
+
+// Virtual for helpful count
+reviewSchema.virtual('helpful').get(function() {
+  return this.helpfulVotes?.length || 0;
+});
 
 // Index to prevent duplicate reviews from same user for same product
 reviewSchema.index({ product: 1, user: 1 }, { unique: true });

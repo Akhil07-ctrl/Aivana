@@ -33,6 +33,18 @@ export default function FilterSidebar({
     setLocalMax(maxPrice || '');
   }, [minPrice, maxPrice]);
 
+  // Lock body scroll when mobile filter is open
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileOpen]);
+
   const PRICE_BRACKETS = [
     { label: 'Under ₹500', min: '', max: '500' },
     { label: '₹500 - ₹1,000', min: '500', max: '1000' },

@@ -8,6 +8,8 @@ import useCartStore from './store/cartStore';
 import NamePromptModal from './components/auth/NamePromptModal';
 import GoogleOneTap from './components/auth/GoogleOneTap';
 import LoadingScreen from './components/ui/LoadingScreen';
+import FlyToCart from './components/ui/FlyToCart';
+import ShareModal from './components/ui/ShareModal';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,15 +24,17 @@ export default function App() {
   const { fetchMe, user, isInitialized } = useAuthStore();
   const { fetchCart } = useCartStore();
   const [showNamePrompt, setShowNamePrompt] = useState(false);
-  const welcomeShown = useRef(false);
+  const [toastPosition, setToastPosition] = useState('bottom-right');
 
-  // Show welcome back toast for returning users
+  // Handle toast position based on screen size
   useEffect(() => {
-    if (isInitialized && user && !welcomeShown.current) {
-      toast.success(`Welcome back, ${user.name.split(' ')[0]}! ✨`);
-      welcomeShown.current = true;
-    }
-  }, [isInitialized, user]);
+    const handleResize = () => {
+      setToastPosition(window.innerWidth <= 1024 ? 'top-center' : 'bottom-right');
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Hydrate auth state on app mount
   useEffect(() => {
@@ -80,7 +84,8 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-
+      <FlyToCart />
+      <ShareModal />
       <GoogleOneTap />
 
       {showNamePrompt && (
@@ -88,13 +93,20 @@ export default function App() {
       )}
 
       <Toaster
-        position="bottom-right"
+        position={toastPosition}
+        containerStyle={{
+          top: toastPosition === 'top-center' ? 80 : 40,
+          bottom: 40,
+        }}
         toastOptions={{
           style: {
-            borderRadius: '10px',
+            borderRadius: '12px',
             background: '#1A1A2E',
             color: '#F1F1F1',
             fontSize: '14px',
+            fontWeight: '600',
+            padding: '12px 20px',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
           },
           success: { iconTheme: { primary: '#E8506A', secondary: '#fff' } },
         }}

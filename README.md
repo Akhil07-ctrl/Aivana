@@ -12,6 +12,8 @@ Aivana is a state-of-the-art, minimalist fashion e-commerce platform built with 
 - **🛡️ Data Resilience & Sync**: Self-healing cart and wishlist engines that automatically synchronize with live database states, filtering out stale or deleted products.
 - **🤖 AI Stylist**: Personalized style recommendations powered by the Groq Llama 3 model directly from the interactive floating widget.
 - **👋 Personalized Experience**: Dynamic, name-based authentication flows with session recognition and welcoming UI toasts.
+- **🛍️ Intelligent Cart Normalization**: Optimized uniqueness logic that prevents duplicate entries by normalizing product specifications (Size/Color), ensuring seamless merging between direct-add and detail-page interactions.
+- **🛒 Cinematic Fly-To-Cart**: High-end micro-interaction that animates product images directly into the shopping cart icon upon addition, providing instant visual feedback.
 - **💎 Premium Dynamic Design**: Minimalist UI built with Playfair Display & Inter fonts. Features fluid typography, interactive hover states, and smooth staggered data-loading transitions powered by Framer Motion.
 - **📱 Touch-First Responsiveness**: Flawless layout scaling across all devices, ensuring perfect touch targets and fluid product grids on mobile and tablet displays.
 

@@ -42,28 +42,40 @@ export const addToCart = asyncHandler(async (req, res) => {
     throw new ApiError(404, `Product not found with ID: ${productId}`);
   }
 
-  // Verify stock for specific variant
-  let variantStock = product.totalStock;
-  if (size || color) {
-    const variant = product.variants?.find(v => {
-      const vSize = (v.size || "").trim().toLowerCase();
-      const reqSize = (size || "").trim().toLowerCase();
-      const vColor = (v.color || "").trim().toLowerCase();
-      const reqColor = (color || "").trim().toLowerCase();
+  // Normalization helper
+  const isOneSize = (s) => ["one size", "n/a", "none", ""].includes((s || "").trim().toLowerCase());
+  const normalize = (s) => (s || "").trim().toLowerCase();
 
-      // Flexible matching:
-      // 1. Exact match (after normalization)
-      // 2. If requested size is empty, it can match "one size", "n/a", or empty in DB
-      const sizeMatch = vSize === reqSize || (reqSize === "" && (vSize === "one size" || vSize === "n/a" || vSize === ""));
-      const colorMatch = vColor === reqColor || (reqColor === "" && (vColor === "one size" || vColor === "n/a" || vColor === ""));
+  // Verify stock for specific variant and get canonical specs
+  let variantStock = product.totalStock;
+  let canonicalSize = size;
+  let canonicalColor = color;
+
+  if (product.variants && product.variants.length > 0) {
+    const variant = product.variants.find(v => {
+      const vSize = normalize(v.size);
+      const reqSize = normalize(size);
+      const vColor = normalize(v.color);
+      const reqColor = normalize(color);
+
+      const sizeMatch = vSize === reqSize || (isOneSize(vSize) && isOneSize(reqSize));
+      const colorMatch = vColor === reqColor || (isOneSize(vColor) && isOneSize(reqColor));
       
       return sizeMatch && colorMatch;
     });
 
-    if (!variant) {
+    if (variant) {
+      variantStock = variant.stock;
+      canonicalSize = variant.size;
+      canonicalColor = variant.color;
+    } else if (size || color) {
       throw new ApiError(400, 'Requested size/color variant not found');
+    } else {
+      // If no specs provided, use first variant as default
+      variantStock = product.variants[0].stock;
+      canonicalSize = product.variants[0].size;
+      canonicalColor = product.variants[0].color;
     }
-    variantStock = variant.stock;
   }
 
   if (variantStock < quantity) {
@@ -75,22 +87,33 @@ export const addToCart = asyncHandler(async (req, res) => {
     cart = await Cart.create({ user: req.user._id, items: [] });
   }
 
-  // Check if exactly same item (product + size + color) already in cart
-  const itemIndex = cart.items.findIndex(p =>
-    p.product.toString() === productId && p.size === size && p.color === color
-  );
+  // Check if exactly same item (product + size + color) already in cart using canonical values
+  const itemIndex = cart.items.findIndex(p => {
+    const pSize = normalize(p.size);
+    const cSize = normalize(canonicalSize);
+    const pColor = normalize(p.color);
+    const cColor = normalize(canonicalColor);
+
+    const sizeMatch = pSize === cSize || (isOneSize(pSize) && isOneSize(cSize));
+    const colorMatch = pColor === cColor || (isOneSize(pColor) && isOneSize(cColor));
+
+    return p.product.toString() === productId && sizeMatch && colorMatch;
+  });
 
   if (itemIndex > -1) {
     // Update existing item
     cart.items[itemIndex].quantity += quantity;
+    // Update to canonical specs if they were previously empty
+    cart.items[itemIndex].size = canonicalSize;
+    cart.items[itemIndex].color = canonicalColor;
   } else {
     // Push new item
     cart.items.push({
       product: productId,
       quantity,
       price: product.price,
-      size,
-      color
+      size: canonicalSize,
+      color: canonicalColor
     });
   }
 
@@ -109,14 +132,17 @@ export const updateCartItem = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ user: req.user._id });
   if (!cart) throw new ApiError(404, 'Cart not found');
 
-  const itemIndex = cart.items.findIndex(p => {
-    const vSize = (p.size || "").trim().toLowerCase();
-    const reqSize = (size || "").trim().toLowerCase();
-    const vColor = (p.color || "").trim().toLowerCase();
-    const reqColor = (color || "").trim().toLowerCase();
+  const isOneSize = (s) => ["one size", "n/a", "none", ""].includes((s || "").trim().toLowerCase());
+  const normalize = (s) => (s || "").trim().toLowerCase();
 
-    const sizeMatch = vSize === reqSize || (reqSize === "" && (vSize === "one size" || vSize === "n/a" || vSize === ""));
-    const colorMatch = vColor === reqColor || (reqColor === "" && (vColor === "one size" || vColor === "n/a" || vColor === ""));
+  const itemIndex = cart.items.findIndex(p => {
+    const pSize = normalize(p.size);
+    const reqSize = normalize(size);
+    const pColor = normalize(p.color);
+    const reqColor = normalize(color);
+
+    const sizeMatch = pSize === reqSize || (isOneSize(pSize) && isOneSize(reqSize));
+    const colorMatch = pColor === reqColor || (isOneSize(pColor) && isOneSize(reqColor));
     
     return p.product.toString() === productId && sizeMatch && colorMatch;
   });
@@ -169,14 +195,17 @@ export const syncCart = asyncHandler(async (req, res) => {
       const product = await Product.findById(productId);
       if (!product) continue;
 
-      const itemIndex = cart.items.findIndex(p => {
-        const vSize = (p.size || "").trim().toLowerCase();
-        const reqSize = (localItem.size || "").trim().toLowerCase();
-        const vColor = (p.color || "").trim().toLowerCase();
-        const reqColor = (localItem.color || "").trim().toLowerCase();
+      const isOneSize = (s) => ["one size", "n/a", "none", ""].includes((s || "").trim().toLowerCase());
+      const normalize = (s) => (s || "").trim().toLowerCase();
 
-        const sizeMatch = vSize === reqSize || (reqSize === "" && (vSize === "one size" || vSize === "n/a" || vSize === ""));
-        const colorMatch = vColor === reqColor || (reqColor === "" && (vColor === "one size" || vColor === "n/a" || vColor === ""));
+      const itemIndex = cart.items.findIndex(p => {
+        const pSize = normalize(p.size);
+        const reqSize = normalize(localItem.size);
+        const pColor = normalize(p.color);
+        const reqColor = normalize(localItem.color);
+
+        const sizeMatch = pSize === reqSize || (isOneSize(pSize) && isOneSize(reqSize));
+        const colorMatch = pColor === reqColor || (isOneSize(pColor) && isOneSize(reqColor));
         
         return p.product.toString() === productId.toString() && sizeMatch && colorMatch;
       });
