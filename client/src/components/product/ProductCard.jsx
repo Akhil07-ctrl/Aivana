@@ -73,9 +73,10 @@ const ProductCard = memo(function ProductCard({ product }) {
         });
         return;
       } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error('Direct share failed:', err);
+        if (err.name === 'AbortError') {
+          return;
         }
+        console.error('Direct share failed:', err);
       }
     }
 

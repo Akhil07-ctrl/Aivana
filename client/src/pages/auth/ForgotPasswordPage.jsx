@@ -72,8 +72,8 @@ export default function ForgotPasswordPage() {
           <div className="text-center mb-8">
             <h2 className="text-2xl font-display text-ink font-bold mb-2">Reset Password</h2>
             <p className="text-ink-muted text-sm">
-              {step === 1 
-                ? "Enter your email to receive a secure OTP" 
+              {step === 1
+                ? "Enter your email to receive a secure OTP"
                 : "Enter the OTP sent to your email and a new password"}
             </p>
           </div>
@@ -123,8 +123,8 @@ export default function ForgotPasswordPage() {
                   <p className="text-sm text-ink-muted leading-tight">
                     An OTP has been sent to <span className="font-bold text-ink">{email}</span>. It is valid for 10 minutes.
                   </p>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setStep(1)}
                     className="text-xs font-bold text-rose-brand hover:text-rose-dark mt-2 underline underline-offset-2"
                   >
@@ -148,7 +148,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, '');
                         if (!val && e.nativeEvent.inputType !== 'deleteContentBackward') return;
-                        
+
                         const newOtp = otp.split('');
                         newOtp[index] = val;
                         const joinedOtp = newOtp.join('').slice(0, 6);

@@ -50,7 +50,7 @@ const useCartStore = create(
             set({ isLoading: true });
             const res = await axiosInstance.post('/cart/items', { productId, quantity, size, color });
             set({ cart: res.data.data, isCartOpen: true });
-            toast.success('Added to your cart! 🛍️');
+            toast.success('Added to your cart!');
           } catch (error) {
             const msg = error.response?.data?.message || 'Failed to add to cart';
             toast.error(msg);
@@ -83,7 +83,7 @@ const useCartStore = create(
             cart: { items, totalPrice: calculateTotal(items) }, 
             isCartOpen: true 
           });
-          toast.success('Added to your cart! 🛍️');
+          toast.success('Added to your cart!');
         }
       },
 

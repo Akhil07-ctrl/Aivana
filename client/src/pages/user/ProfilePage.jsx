@@ -70,7 +70,7 @@ export default function ProfilePage() {
           },
         });
       }
-      toast.success("All items added to cart! 🛍️", { id: toastId });
+      toast.success("All items added to cart!", { id: toastId });
     } catch (err) {
       toast.error("Failed to add some items", { id: toastId });
     }

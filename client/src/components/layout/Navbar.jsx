@@ -277,11 +277,10 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
-          isScrolled || location.pathname === '/faq' || location.pathname === '/contact'
-            ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' 
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${isScrolled || location.pathname === '/faq' || location.pathname === '/contact'
+            ? 'bg-white/95 backdrop-blur-md shadow-sm py-3'
             : 'bg-transparent py-5'
-        } ${isDarkHeader ? 'text-white' : 'text-ink'}`}
+          } ${isDarkHeader ? 'text-white' : 'text-ink'}`}
       >
         <div className="container-main flex items-center justify-between gap-2 sm:gap-4">
           <AnimatePresence>
@@ -387,15 +386,13 @@ export default function Navbar() {
                 onFocus={() => setActiveSearchSource('desktop')}
                 onBlur={() => setTimeout(() => setActiveSearchSource(null), 200)}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full rounded-full py-2 pl-10 pr-4 text-sm transition-all duration-300 ${
-                  isDarkHeader 
-                    ? 'bg-white/20 text-white placeholder-white/80 border border-white/40 focus:bg-white/30 focus:border-white/60 group-hover:bg-white/25 shadow-inner' 
+                className={`w-full rounded-full py-2 pl-10 pr-4 text-sm transition-all duration-300 ${isDarkHeader
+                    ? 'bg-white/20 text-white placeholder-white/80 border border-white/40 focus:bg-white/30 focus:border-white/60 group-hover:bg-white/25 shadow-inner'
                     : 'bg-cream-100/50 border border-transparent focus:bg-white focus:border-rose-brand/30 focus:ring-4 focus:ring-rose-brand/5 placeholder-transparent group-hover:bg-cream-100'
-                }`}
+                  }`}
               />
-              <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${
-                isDarkHeader ? 'text-white group-focus-within:text-white' : 'text-ink-muted group-focus-within:text-rose-brand'
-              }`}>
+              <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${isDarkHeader ? 'text-white group-focus-within:text-white' : 'text-ink-muted group-focus-within:text-rose-brand'
+                }`}>
                 <FiSearch size={16} />
               </div>
 
@@ -425,17 +422,15 @@ export default function Navbar() {
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 relative z-50">
             <button
               onClick={() => setIsMobileSearchOpen(true)}
-              className={`xl:hidden p-2 transition-all duration-300 rounded-full ${
-                isDarkHeader ? 'text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
-              }`}
+              className={`xl:hidden p-2 transition-all duration-300 rounded-full ${isDarkHeader ? 'text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
+                }`}
             >
               <FiSearch size={20} />
             </button>
 
             {user && (
-              <Link to="/wishlist" className={`p-2 transition relative rounded-full hidden sm:block ${
-                isDarkHeader ? 'text-white hover:text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
-              }`}>
+              <Link to="/wishlist" className={`p-2 transition relative rounded-full hidden sm:block ${isDarkHeader ? 'text-white hover:text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
+                }`}>
                 <FiHeart size={20} />
                 {wishlistCount > 0 && (
                   <span className="absolute top-1 right-1 bg-rose-brand text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white">
@@ -448,9 +443,8 @@ export default function Navbar() {
             <button
               id="nav-cart-btn"
               onClick={() => setCartOpen(true)}
-              className={`p-2 transition relative cursor-pointer rounded-full ${
-                isDarkHeader ? 'text-white hover:text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
-              }`}
+              className={`p-2 transition relative cursor-pointer rounded-full ${isDarkHeader ? 'text-white hover:text-white hover:bg-white/20' : 'text-ink-light hover:text-rose-brand hover:bg-cream-100'
+                }`}
             >
               <FiShoppingBag size={20} />
               {cartItemsCount > 0 && (
@@ -464,11 +458,10 @@ export default function Navbar() {
             {isInstallable && (
               <button
                 onClick={handleInstallClick}
-                className={`hidden lg:flex items-center gap-2 px-3 py-2 transition-all duration-300 rounded-full text-sm font-bold border ${
-                  isDarkHeader
+                className={`hidden lg:flex items-center gap-2 px-3 py-2 transition-all duration-300 rounded-full text-sm font-bold border ${isDarkHeader
                     ? 'border-white/40 text-white hover:bg-white/20'
                     : 'border-rose-brand/30 text-rose-brand hover:bg-rose-50 hover:border-rose-brand/50'
-                }`}
+                  }`}
                 title="Install Aivana App"
               >
                 <FiDownload size={16} />
@@ -482,13 +475,12 @@ export default function Navbar() {
                 <div className="flex items-center gap-1 lg:gap-2">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className={`flex items-center gap-2 p-1 lg:pr-4 rounded-full transition-all duration-300 group ${
-                      userMenuOpen 
-                        ? 'bg-ink text-white shadow-lg shadow-ink/20' 
+                    className={`flex items-center gap-2 p-1 lg:pr-4 rounded-full transition-all duration-300 group ${userMenuOpen
+                        ? 'bg-ink text-white shadow-lg shadow-ink/20'
                         : isDarkHeader
                           ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md'
                           : 'bg-white hover:bg-cream-50 border border-cream-200 text-ink shadow-sm hover:shadow-md hover:border-rose-brand/30'
-                    }`}
+                      }`}
                   >
                     <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 ${isDarkHeader && !userMenuOpen ? 'bg-white/20' : 'bg-cream-100'} ${userMenuOpen ? 'ring-2 ring-white/20' : ''}`}>
                       {user.avatar?.url ? (
@@ -546,11 +538,10 @@ export default function Navbar() {
                   </AnimatePresence>
                 </div>
               ) : (
-                <Link to="/login" className={`flex items-center justify-center p-2 transition rounded-full lg:font-bold lg:text-sm ${
-                  isDarkHeader 
-                    ? 'text-white hover:text-white hover:bg-white/20 lg:bg-white/20 lg:text-white lg:px-6 lg:py-2.5 lg:hover:bg-white/30' 
+                <Link to="/login" className={`flex items-center justify-center p-2 transition rounded-full lg:font-bold lg:text-sm ${isDarkHeader
+                    ? 'text-white hover:text-white hover:bg-white/20 lg:bg-white/20 lg:text-white lg:px-6 lg:py-2.5 lg:hover:bg-white/30'
                     : 'text-ink-light hover:text-rose-brand hover:bg-cream-100 lg:bg-ink lg:text-white lg:px-6 lg:py-2.5 lg:shadow-lg lg:hover:bg-rose-brand'
-                }`}>
+                  }`}>
                   <FiUser size={20} className="lg:hidden" />
                   <span className="hidden lg:block">Sign in</span>
                 </Link>

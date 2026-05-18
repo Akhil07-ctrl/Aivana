@@ -68,10 +68,12 @@ export default function CategoryGrid() {
                 </p>
                 <Link
                   to={`/shop?category=${category.name}`}
-                  className="inline-flex items-center justify-center w-10 h-10 bg-white text-ink rounded-full transition-all duration-300 group-hover:w-full group-hover:bg-rose-brand group-hover:text-white"
+                  className="inline-flex items-center justify-center h-10 bg-white text-ink rounded-full transition-all duration-300 w-10 group-hover:w-full group-hover:bg-rose-brand hover:!bg-rose-dark overflow-hidden group-hover:text-white"
                 >
-                  <FiArrowRight className="group-hover:mr-2" />
-                  <span className="hidden group-hover:inline text-xs font-bold uppercase tracking-wider">Explore</span>
+                  <FiArrowRight className="flex-shrink-0 transition-transform duration-300" />
+                  <span className="max-w-0 opacity-0 whitespace-nowrap overflow-hidden transition-all duration-300 group-hover:max-w-[100px] group-hover:opacity-100 group-hover:ml-2 text-xs font-bold uppercase tracking-wider">
+                    Explore
+                  </span>
                 </Link>
               </div>
             </motion.div>

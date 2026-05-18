@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Aivana | AI-Powered Premium Fashion',
         short_name: 'Aivana',
@@ -37,6 +37,9 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
+      },
+      devOptions: {
+        enabled: true,
       },
     }),
   ],

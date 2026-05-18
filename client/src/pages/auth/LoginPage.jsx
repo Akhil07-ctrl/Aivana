@@ -11,11 +11,11 @@ const RESEND_TIMER = 30; // seconds
 
 export default function LoginPage() {
   const [authMethod, setAuthMethod] = useState('email'); // 'email' | 'phone'
-  
+
   // Email states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // Phone states
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
@@ -184,13 +184,13 @@ export default function LoginPage() {
 
           {/* Custom Tabs */}
           <div className="flex bg-cream-100 rounded-xl p-1 mb-8">
-            <button 
+            <button
               onClick={() => { setAuthMethod('email'); setIsOtpSent(false); }}
               className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${authMethod === 'email' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted hover:text-ink'}`}
             >
               Email
             </button>
-            <button 
+            <button
               onClick={() => setAuthMethod('phone')}
               className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${authMethod === 'phone' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted hover:text-ink'}`}
             >
@@ -293,8 +293,8 @@ export default function LoginPage() {
                       <p className="text-sm text-ink-muted leading-tight">
                         OTP sent to <span className="font-bold text-ink">+91 {phone}</span>
                       </p>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => { setIsOtpSent(false); setOtp(''); }}
                         className="text-xs font-bold text-rose-brand hover:text-rose-dark mt-2 underline underline-offset-2"
                       >
@@ -316,7 +316,7 @@ export default function LoginPage() {
                           onChange={(e) => {
                             const val = e.target.value.replace(/\D/g, '');
                             if (!val && e.nativeEvent.inputType !== 'deleteContentBackward') return;
-                            
+
                             const newOtp = otp.split('');
                             newOtp[index] = val;
                             const joinedOtp = newOtp.join('').slice(0, 6);
